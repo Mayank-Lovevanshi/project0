@@ -12,6 +12,6 @@ public class CreateTestCaseRequest
 {
     private String inputData;
     private String expectedOutput;
-    private TestCaseType type;
+    private TestCaseType testCaseType;
     private Integer sequenceNumber;
 }
