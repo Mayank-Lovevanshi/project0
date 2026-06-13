@@ -1,55 +1,45 @@
 package com.fastlearner.project0.serviceImpl;
 
 import com.fastlearner.project0.dto.CreateProblemRequest;
-import com.fastlearner.project0.dto.ProblemResponse;
+import com.fastlearner.project0.dto.ProblemDTO;
 import com.fastlearner.project0.entity.Problem;
-import com.fastlearner.project0.entity.User;
-import com.fastlearner.project0.exceptions.AuthenticationException;
-import com.fastlearner.project0.exceptions.InvalidArgumentException;
-import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.ProblemRepository;
-import com.fastlearner.project0.repository.UserRepository;
 import com.fastlearner.project0.service.ProblemService;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-@Service
+import java.util.Optional;
+
 public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
     private final ModelMapper modelMapper;
-    private final UserRepository userRepository;
-    public ProblemServiceImpl(ProblemRepository problemRepository, ModelMapper modelMapper,UserRepository userRepository)
+    public ProblemServiceImpl(ProblemRepository problemRepository,ModelMapper modelMapper)
     {
         this.problemRepository = problemRepository;
         this.modelMapper = modelMapper;
-        this.userRepository = userRepository;
     }
 
-    public ProblemResponse getProblemById(Long id)
+    public ProblemDTO getProblemById(Long id)
     {
-        if(id<=0) throw new InvalidArgumentException("INVALID_ID");
-        Problem problem = problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
-        return modelMapper.map(problem, ProblemResponse.class);
+        if(id<=0) throw new RuntimeException("INVALID_ID");
+        Optional<Problem> optionalProblem = problemRepository.findById(id);
+        //return optionalProblem.map(problem -> modelMapper.map(problem, ProblemDTO.class)).orElse(null);
+        if(optionalProblem.isEmpty()) return null;
+        return modelMapper.map(optionalProblem.get(),ProblemDTO.class);
     }
-    public ProblemResponse createProblem(CreateProblemRequest requestProblem)
+    public ProblemDTO createProblem(CreateProblemRequest requestProblem)
     {
         Problem problem=modelMapper.map(requestProblem,Problem.class);
         //set up user id who set this problem
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(userDetails==null) throw new AuthenticationException("NO_ACTIVE_SESSION");
-        String email = userDetails.getUsername();
-        User user = userRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("USER_NOT_FOUND"));
-        problem.setCreatedBy(user);
         problemRepository.save(problem);
-        return modelMapper.map(problem,ProblemResponse.class);
+        ProblemDTO problemDTO = modelMapper.map(problem,ProblemDTO.class);
+        return problemDTO;
     }
-    public ProblemResponse deleteProblem(Long id)
+    public ProblemDTO deleteProblem(Long id)
     {
-        if(id<=0) throw new InvalidArgumentException("INVALID_ID");
-        Problem problem = problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        Problem problem = problemRepository.findById(id).orElse(null);
+        if(problem==null) return null;
         problemRepository.delete(problem);
-        return modelMapper.map(problem,ProblemResponse.class);
+        ProblemDTO problemDTO = modelMapper.map(problem,ProblemDTO.class);
+        return problemDTO;
     }
 }

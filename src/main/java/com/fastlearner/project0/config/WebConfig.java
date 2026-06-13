@@ -57,9 +57,10 @@ public class WebConfig {
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         return daoAuthenticationProvider;
     }
+
     @Bean
-    public ModelMapper modelMapper()
-    {
+    public ModelMapper modelMapper() {
         return new ModelMapper();
     }
+
 }
