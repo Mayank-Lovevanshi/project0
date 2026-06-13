@@ -5,6 +5,7 @@ import com.fastlearner.project0.dto.ProblemDTO;
 import com.fastlearner.project0.service.ProblemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/problems")
@@ -22,11 +23,13 @@ public class ProblemController
         return new ResponseEntity<>(problemService.getProblemById(id), HttpStatus.OK);
     }
     @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProblemResponse> createProblem(@RequestBody CreateProblemRequest problemDTO)
     {
         return new ResponseEntity<>(problemService.createProblem(problemDTO),HttpStatus.CREATED);
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProblemResponse> deleteProblem(@PathVariable Long id)
     {
         return new ResponseEntity<>(problemService.deleteProblem(id),HttpStatus.OK);

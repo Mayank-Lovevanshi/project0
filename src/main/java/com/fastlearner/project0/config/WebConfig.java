@@ -2,6 +2,7 @@ package com.fastlearner.project0.config;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -32,6 +33,9 @@ public class WebConfig {
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(request->
                         request.requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT,"/api/problem/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST,"api/problem/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE,"api/problem/**").hasRole("ADMIN")
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults()).build();
