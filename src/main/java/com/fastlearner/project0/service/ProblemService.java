@@ -5,7 +5,7 @@ import com.fastlearner.project0.dto.ProblemDTO;
 
 public interface ProblemService
 {
-    public ProblemDTO getProblemById(Long id);
-    public ProblemDTO createProblem(CreateProblemRequest problemDTO);
-    public ProblemDTO deleteProblem(Long id);
+    public ProblemResponse getProblemById(Long id);
+    public ProblemResponse createProblem(CreateProblemRequest problemDTO);
+    public ProblemResponse deleteProblem(Long id);
 }
