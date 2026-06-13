@@ -1,15 +1,11 @@
 package com.fastlearner.project0.entity;
-
-import com.fastlearner.project0.enums.Role;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 public class CustomUserDetails implements UserDetails
 {
     private final User user;

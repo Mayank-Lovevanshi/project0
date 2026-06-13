@@ -1,7 +1,7 @@
 package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.CreateProblemRequest;
-import com.fastlearner.project0.dto.ProblemDTO;
+import com.fastlearner.project0.dto.ProblemResponse;
 import com.fastlearner.project0.service.ProblemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -50,5 +51,5 @@ public class Problem
     @JoinColumn(name = "created_by")
     private User createdBy;
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "problem",cascade = CascadeType.ALL)
-    private List<TestCase> testCases;
+    private List<TestCase> testCases = new ArrayList<>();
 }

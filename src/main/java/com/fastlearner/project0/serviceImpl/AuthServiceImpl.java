@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
            throw new RuntimeException("USER_ALREADY_EXISTS");
        }
        User user = modelMapper.map(registerDTO,User.class);
-       user.setRole(Role.STUDENT);
+       user.setRole(Role.ADMIN);
        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
        return modelMapper.map(userRepository.save(user),RegisterDTO.class);
     }
