@@ -34,8 +34,8 @@ public class WebConfig {
                 .authorizeHttpRequests(request->
                         request.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT,"/api/problem/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST,"api/problem/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE,"api/problem/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST,"/api/problem/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE,"/api/problem/**").hasRole("ADMIN")
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults()).build();

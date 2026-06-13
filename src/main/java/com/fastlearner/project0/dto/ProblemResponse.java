@@ -24,8 +24,7 @@ public class ProblemResponse
     private Integer timeLimitMs;
     private Integer memoryLimitMb;
     private ProblemStatus status;
-    private String createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<TestCaseResponse> sampleTestCases;
+    private List<TestCaseResponse> testCases;
 }

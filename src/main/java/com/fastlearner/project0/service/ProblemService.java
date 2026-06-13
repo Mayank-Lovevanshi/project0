@@ -1,7 +1,7 @@
 package com.fastlearner.project0.service;
 
 import com.fastlearner.project0.dto.CreateProblemRequest;
-import com.fastlearner.project0.dto.ProblemDTO;
+import com.fastlearner.project0.dto.ProblemResponse;
 
 public interface ProblemService
 {

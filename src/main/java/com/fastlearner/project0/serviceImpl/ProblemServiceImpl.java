@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
@@ -26,7 +28,6 @@ public class ProblemServiceImpl implements ProblemService {
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
     }
-
     public ProblemResponse getProblemById(Long id)
     {
         if(id<=0) throw new InvalidArgumentException("INVALID_ID");
