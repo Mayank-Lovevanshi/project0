@@ -1,6 +1,7 @@
 package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.CreateProblemRequest;
+import com.fastlearner.project0.dto.ProblemResponse;
 import com.fastlearner.project0.service.ProblemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +17,19 @@ public class ProblemController
         this.problemService = problemService;
     }
     @GetMapping("/{id}")
-    public ResponseEntity<ProblemDTO> getProblemById(@PathVariable Long id)
+    public ResponseEntity<ProblemResponse> getProblemById(@PathVariable Long id)
     {
         return new ResponseEntity<>(problemService.getProblemById(id), HttpStatus.OK);
     }
     @PostMapping("/create")
-    public ResponseEntity<ProblemDTO> createProblem(@RequestBody CreateProblemRequest problemDTO)
+    public ResponseEntity<ProblemResponse> createProblem(@RequestBody CreateProblemRequest problemDTO)
     {
         return new ResponseEntity<>(problemService.createProblem(problemDTO),HttpStatus.CREATED);
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<ProblemDTO> deleteProblem(@RequestBody Long id)
+    public ResponseEntity<ProblemResponse> deleteProblem(@PathVariable Long id)
     {
         return new ResponseEntity<>(problemService.deleteProblem(id),HttpStatus.OK);
     }
-
-
 
 }
