@@ -5,7 +5,6 @@ import com.fastlearner.project0.dto.problem.ProblemResponse;
 import com.fastlearner.project0.dto.problem.UpdateProblemRequest;
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.User;
-import com.fastlearner.project0.enums.ProblemStatus;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.InvalidArgumentException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
@@ -46,7 +45,6 @@ public class ProblemServiceImpl implements ProblemService {
         String email = userDetails.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("USER_NOT_FOUND"));
         problem.setCreatedBy(user);
-        problem.setStatus(ProblemStatus.DRAFTED);
         problemRepository.save(problem);
         return modelMapper.map(problem,ProblemResponse.class);
     }
