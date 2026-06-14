@@ -1,8 +1,8 @@
 package com.fastlearner.project0.serviceImpl;
 
-import com.fastlearner.project0.dto.LoginDTO;
-import com.fastlearner.project0.dto.LoginResponseDTO;
-import com.fastlearner.project0.dto.RegisterDTO;
+import com.fastlearner.project0.dto.auth.LoginDTO;
+import com.fastlearner.project0.dto.auth.LoginResponseDTO;
+import com.fastlearner.project0.dto.auth.RegisterDTO;
 import com.fastlearner.project0.entity.User;
 import com.fastlearner.project0.enums.Role;
 import com.fastlearner.project0.exceptions.AuthenticationException;

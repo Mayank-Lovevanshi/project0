@@ -1,6 +1,6 @@
 package com.fastlearner.project0.service;
 
-import com.fastlearner.project0.dto.LoginDTO;
+import com.fastlearner.project0.dto.auth.LoginDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

@@ -1,8 +1,8 @@
 package com.fastlearner.project0.service;
 
-import com.fastlearner.project0.dto.LoginDTO;
-import com.fastlearner.project0.dto.LoginResponseDTO;
-import com.fastlearner.project0.dto.RegisterDTO;
+import com.fastlearner.project0.dto.auth.LoginDTO;
+import com.fastlearner.project0.dto.auth.LoginResponseDTO;
+import com.fastlearner.project0.dto.auth.RegisterDTO;
 
 public interface AuthService
 {
