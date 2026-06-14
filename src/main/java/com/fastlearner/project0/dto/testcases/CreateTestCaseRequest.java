@@ -1,4 +1,4 @@
-package com.fastlearner.project0.dto;
+package com.fastlearner.project0.dto.testcases;
 
 import com.fastlearner.project0.enums.TestCaseType;
 import lombok.AllArgsConstructor;

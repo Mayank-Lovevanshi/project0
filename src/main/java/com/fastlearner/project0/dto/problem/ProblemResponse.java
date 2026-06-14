@@ -1,7 +1,6 @@
-package com.fastlearner.project0.dto;
+package com.fastlearner.project0.dto.problem;
 
-import com.fastlearner.project0.entity.TestCase;
-import com.fastlearner.project0.entity.User;
+import com.fastlearner.project0.dto.testcases.TestCaseResponse;
 import com.fastlearner.project0.enums.Difficulty;
 import com.fastlearner.project0.enums.ProblemStatus;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProblemDTO {
+public class ProblemResponse
+{
     private Long id;
     private String title;
     private String statement;
@@ -27,7 +27,5 @@ public class ProblemDTO {
     private ProblemStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private User createdBy;
-    private List<TestCase> testCases;
+    private List<TestCaseResponse> testCases;
 }
-

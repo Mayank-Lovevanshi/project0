@@ -1,6 +1,5 @@
-package com.fastlearner.project0.dto;
+package com.fastlearner.project0.dto.auth;
 
-import com.fastlearner.project0.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

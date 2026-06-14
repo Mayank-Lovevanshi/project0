@@ -1,7 +1,8 @@
 package com.fastlearner.project0.serviceImpl;
 
-import com.fastlearner.project0.dto.CreateProblemRequest;
-import com.fastlearner.project0.dto.ProblemResponse;
+import com.fastlearner.project0.dto.problem.CreateProblemRequest;
+import com.fastlearner.project0.dto.problem.ProblemResponse;
+import com.fastlearner.project0.dto.problem.UpdateProblemRequest;
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.User;
 import com.fastlearner.project0.enums.ProblemStatus;
@@ -16,7 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ProblemServiceImpl implements ProblemService {
@@ -54,5 +56,33 @@ public class ProblemServiceImpl implements ProblemService {
         Problem problem = problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
         problemRepository.delete(problem);
         return modelMapper.map(problem,ProblemResponse.class);
+    }
+
+    @Override
+    public List<ProblemResponse> getAllProblems() {
+        List<ProblemResponse> problemResponses = new ArrayList<>();
+        List<Problem> problems = problemRepository.findAll();
+        for(Problem problem:problems){
+            problemResponses.add(modelMapper.map(problem,ProblemResponse.class));
+        }
+        return problemResponses;
+    }
+
+    @Override
+    public ProblemResponse updateProblem(Long id, UpdateProblemRequest problemDTO) {
+        if(id<=0) throw new InvalidArgumentException("INVALID_ID");
+        Problem problemFromDB = problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        Problem problem = modelMapper.map(problemFromDB,Problem.class);
+        problemFromDB.setStatus(problemDTO.getStatus());
+        problemFromDB.setTitle(problemDTO.getTitle());
+        problemFromDB.setStatement(problemDTO.getStatement());
+        problemFromDB.setConstraints(problemDTO.getConstraints());
+        problemFromDB.setInputFormat(problemDTO.getInputFormat());
+        problemFromDB.setOutputFormat(problemDTO.getOutputFormat());
+        problemFromDB.setDifficulty(problemDTO.getDifficulty());
+        problemFromDB.setMemoryLimitMb(problemDTO.getMemoryLimitMs());
+        problemFromDB.setTimeLimitMs(problemDTO.getTimeLimitMs());
+        Problem savedProblem = problemRepository.save(problem);
+        return modelMapper.map(savedProblem,ProblemResponse.class);
     }
 }

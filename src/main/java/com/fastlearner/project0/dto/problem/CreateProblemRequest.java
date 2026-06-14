@@ -1,4 +1,4 @@
-package com.fastlearner.project0.dto;
+package com.fastlearner.project0.dto.problem;
 
 import com.fastlearner.project0.enums.Difficulty;
 import lombok.AllArgsConstructor;
