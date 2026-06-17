@@ -43,14 +43,14 @@ public class Judge0ServiceImpl implements Judge0Service
 
             // 2. Pass the raw JSON string directly instead of the object
             HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
-            System.out.println(System.currentTimeMillis());
+            Long start = System.currentTimeMillis();
             ResponseEntity<Judge0SubmissionResponse> response = restTemplate.exchange(
                     judge0Url,
                     HttpMethod.POST,
                     entity,
                     Judge0SubmissionResponse.class
             );
-            System.out.println(System.currentTimeMillis());
+            System.out.println(System.currentTimeMillis()-start);
             Judge0SubmissionResponse body = response.getBody();
             return convertToJudgeResult(body);
 
