@@ -1,12 +1,7 @@
 package com.fastlearner.project0.serviceImpl;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.dto.judge0.JudgeResult;
-import com.fastlearner.project0.dto.judge0.batch.Judge0BatchSubmissionRequest;
-import com.fastlearner.project0.dto.judge0.batch.Judge0BatchSubmissionResponse;
-import com.fastlearner.project0.entity.TestCase;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.UnsupportedLanguageException;
@@ -17,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
 
 @Service
 public class Judge0ServiceImpl implements Judge0Service
@@ -25,8 +19,6 @@ public class Judge0ServiceImpl implements Judge0Service
     private final RestTemplate restTemplate;
     @Value("${judge0.api.url}")
     private String judge0Url;
-    private final String batchJudge0Url =
-            "http://localhost:2358/submissions/batch?wait=true";
     public Judge0ServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -40,7 +32,7 @@ public class Judge0ServiceImpl implements Judge0Service
 
         try {
             // 1. Manually force correct serialization using the standard Jackson module
-            com.fasterxml.jackson.databind.ObjectMapper standardMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ObjectMapper standardMapper = new ObjectMapper();
             String jsonPayload = standardMapper.writeValueAsString(request);
 
             // Debug string to verify your terminal console displays snake_case keys
@@ -51,89 +43,19 @@ public class Judge0ServiceImpl implements Judge0Service
 
             // 2. Pass the raw JSON string directly instead of the object
             HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
-
+            System.out.println(System.currentTimeMillis());
             ResponseEntity<Judge0SubmissionResponse> response = restTemplate.exchange(
                     judge0Url,
                     HttpMethod.POST,
                     entity,
                     Judge0SubmissionResponse.class
             );
-
+            System.out.println(System.currentTimeMillis());
             Judge0SubmissionResponse body = response.getBody();
             return convertToJudgeResult(body);
 
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize Judge0 request", e);
-        }
-    }
-    @Override
-    public List<JudgeResult> executeBatch(
-            String sourceCode,
-            Language language,
-            List<TestCase> testCases)
-    {
-        List<Judge0SubmissionRequest> requests =
-                testCases.stream()
-                        .map(testCase -> {
-                            Judge0SubmissionRequest request =
-                                    new Judge0SubmissionRequest();
-
-                            request.setSourceCode(sourceCode);
-                            request.setLanguageId(
-                                    getJudge0LanguageId(language));
-
-                            request.setStdin(
-                                    testCase.getInputData());
-
-                            return request;
-                        })
-                        .toList();
-
-        Judge0BatchSubmissionRequest batchRequest =
-                new Judge0BatchSubmissionRequest();
-
-        batchRequest.setSubmissions(requests);
-
-        try
-        {
-            ObjectMapper mapper = new ObjectMapper();
-
-            String jsonPayload =
-                    mapper.writeValueAsString(batchRequest);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity =
-                    new HttpEntity<>(jsonPayload, headers);
-
-            ResponseEntity<Judge0BatchSubmissionResponse> response =
-                    restTemplate.exchange(
-                            judge0Url + "/batch",
-                            HttpMethod.POST,
-                            entity,
-                            Judge0BatchSubmissionResponse.class
-                    );
-
-            Judge0BatchSubmissionResponse body =
-                    response.getBody();
-
-            if(body == null || body.getSubmissions() == null)
-            {
-                throw new RuntimeException(
-                        "INVALID_JUDGE0_RESPONSE");
-            }
-
-            return body.getSubmissions()
-                    .stream()
-                    .map(this::convertToJudgeResult)
-                    .toList();
-
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(
-                    "FAILED_TO_SERIALIZE_REQUEST", e);
         }
     }
     @Override
