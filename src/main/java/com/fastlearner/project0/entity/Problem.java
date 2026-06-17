@@ -50,6 +50,8 @@ public class Problem
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
+    @OneToMany(mappedBy = "problem")
+    private List<ProblemTemplate> problemTemplates = new ArrayList<>();
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "problem",cascade = CascadeType.ALL)
     private List<TestCase> testCases = new ArrayList<>();
 }

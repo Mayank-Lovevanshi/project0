@@ -9,8 +9,7 @@ import java.util.List;
 
 public interface Judge0Service
 {
-    public JudgeResult execute(String sourceCode, Language language, String input);
+    public JudgeResult execute(String sourceCode, Language language,String input);
     public Integer getJudge0LanguageId(Language language);
     public JudgeResult convertToJudgeResult(Judge0SubmissionResponse body);
-    List<JudgeResult> executeBatch(String sourceCode, Language language, List<TestCase> testCases);
 }
