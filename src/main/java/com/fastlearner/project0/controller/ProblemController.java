@@ -44,6 +44,7 @@ public class ProblemController
         return new ResponseEntity<>(problemService.getAllProblems(),HttpStatus.OK);
     }
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProblemResponse> updateProblem(@PathVariable Long id,@RequestBody @Valid UpdateProblemRequest problemDTO)
     {
         return new ResponseEntity<>(problemService.updateProblem(id,problemDTO),HttpStatus.OK);

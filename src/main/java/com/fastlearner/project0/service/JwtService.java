@@ -29,7 +29,7 @@ public class JwtService
                 .subject(loginDTO.getEmail())
                 .issuer("ML")
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+(60*10*1000)))
+                .expiration(new Date(System.currentTimeMillis()+(24*60*60*1000)))
                 .and()
                 .signWith(generateKey())
                 .compact();

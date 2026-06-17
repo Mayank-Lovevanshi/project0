@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
@@ -62,5 +63,8 @@ public class WebConfig {
     public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-
+    @Bean
+    RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 }
