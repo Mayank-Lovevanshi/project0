@@ -3,7 +3,7 @@ package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
 import com.fastlearner.project0.dto.judge0.JudgeResult;
 import com.fastlearner.project0.enums.Language;
-import com.fastlearner.project0.service.Judge0Service;
+import com.fastlearner.project0.service.JudgeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Judge0Controller
 {
-    private final Judge0Service judge0Service;
+    private final JudgeService judge0Service;
 
-    public Judge0Controller(Judge0Service judge0Service) {
+    public Judge0Controller(JudgeService judge0Service) {
         this.judge0Service = judge0Service;
     }
 

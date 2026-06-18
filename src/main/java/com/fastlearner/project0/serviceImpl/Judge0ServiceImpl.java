@@ -1,11 +1,12 @@
 package com.fastlearner.project0.serviceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.dto.judge0.JudgeResult;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.UnsupportedLanguageException;
-import com.fastlearner.project0.service.Judge0Service;
+import com.fastlearner.project0.service.JudgeService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Service
-public class Judge0ServiceImpl implements Judge0Service
+public class Judge0ServiceImpl implements JudgeService
 {
     private final RestTemplate restTemplate;
     @Value("${judge0.api.url}")
     private String judge0Url;
-    public Judge0ServiceImpl(RestTemplate restTemplate) {
+    private final ObjectMapper objectMapper;
+    public Judge0ServiceImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
     @Override
     public JudgeResult execute(String sourceCode, Language language, String input)
@@ -31,19 +34,14 @@ public class Judge0ServiceImpl implements Judge0Service
         request.setStdin(input);
 
         try {
-            // 1. Manually force correct serialization using the standard Jackson module
-            ObjectMapper standardMapper = new ObjectMapper();
-            String jsonPayload = standardMapper.writeValueAsString(request);
-
-            // Debug string to verify your terminal console displays snake_case keys
-            System.out.println("Sending clean JSON: " + jsonPayload);
+            String jsonPayload = objectMapper.writeValueAsString(request);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             // 2. Pass the raw JSON string directly instead of the object
             HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
-            Long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             ResponseEntity<Judge0SubmissionResponse> response = restTemplate.exchange(
                     judge0Url,
                     HttpMethod.POST,
@@ -51,10 +49,10 @@ public class Judge0ServiceImpl implements Judge0Service
                     Judge0SubmissionResponse.class
             );
             System.out.println(System.currentTimeMillis()-start);
-            Judge0SubmissionResponse body = response.getBody();
-            return convertToJudgeResult(body);
+            System.out.println(response);
+            return convertToJudgeResult(response.getBody());
 
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize Judge0 request", e);
         }
     }
@@ -76,28 +74,30 @@ public class Judge0ServiceImpl implements Judge0Service
     @Override
     public JudgeResult convertToJudgeResult(Judge0SubmissionResponse response)
     {
+        /*
+        private String output;
+        private Long executionTimeMs;
+        private Long memoryUsedKb;
+        private Verdict verdict;
+        private String errorMessage;
+         */
         JudgeResult result = new JudgeResult();
         result.setOutput(response.getStdout());
-        if(response.getTime() != null)
+        result.setVerdict(mapVerdict(response));
+        result.setMemoryUsedKb(response.getMemory()==null?0:response.getMemory());
+        result.setExecutionTimeMs(response.getTime()==null?0:response.getTime());
+        if(result.getVerdict().equals(Verdict.RUNTIME_ERROR))
         {
-            result.setExecutionTimeMs(
-                    (long)(Double.parseDouble(
-                            response.getTime()) * 1000)
-            );
+            result.setErrorMessage(response.getStderr());
         }
-        if(response.getMemory() != null)
+        else
         {
-            result.setMemoryUsedKb(response.getMemory().longValue());
+            result.setErrorMessage(response.getCompile_output());
         }
-        result.setVerdict(
-                mapVerdict(response)
-        );
-
         return result;
     }
 
-    private Verdict mapVerdict(
-            Judge0SubmissionResponse response)
+    private Verdict mapVerdict(Judge0SubmissionResponse response)
     {
         Integer statusId = response.getStatus().getId();
 

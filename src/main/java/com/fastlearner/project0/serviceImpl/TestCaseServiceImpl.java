@@ -29,9 +29,9 @@ public class TestCaseServiceImpl implements TestCaseService
     @Override
     public TestCaseResponse createTestCase(Long problemId, CreateTestCaseRequest testCaseDTO) {
         if(problemId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_ID");
-        Problem problemfromDB = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        Problem problemDB = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
         TestCase testCase = modelMapper.map(testCaseDTO, TestCase.class);
-        testCase.setProblem(problemfromDB);
+        testCase.setProblem(problemDB);
         testCaseRepository.save(testCase);
         return modelMapper.map(testCase, TestCaseResponse.class);
     }

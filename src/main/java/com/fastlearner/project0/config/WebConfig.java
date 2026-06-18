@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Configuration
@@ -66,5 +67,9 @@ public class WebConfig {
     @Bean
     RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

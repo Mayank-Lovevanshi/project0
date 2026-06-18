@@ -1,4 +1,4 @@
-package com.fastlearner.project0.dto.judge0;
+package com.fastlearner.project0.dto.evaluation;
 
 import com.fastlearner.project0.enums.Verdict;
 import lombok.AllArgsConstructor;
@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class JudgeResult
+public class EvaluationResult
 {
-    private String output;
+    private Verdict verdict;
+    private Integer passedTestCases;
+    private Integer totalTestCases;
     private Double executionTimeMs;
     private Long memoryUsedKb;
-    private Verdict verdict;
     private String errorMessage;
 }
