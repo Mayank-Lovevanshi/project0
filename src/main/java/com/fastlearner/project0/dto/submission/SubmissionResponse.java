@@ -22,5 +22,6 @@ public class SubmissionResponse
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;
+    private String errorMessage;
 }
 

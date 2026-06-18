@@ -1,6 +1,7 @@
 package com.fastlearner.project0.entity;
 
 import com.fastlearner.project0.enums.Language;
+import com.fastlearner.project0.enums.SubmissionStatus;
 import com.fastlearner.project0.enums.Verdict;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,13 +26,17 @@ public class Submission
     @Column(nullable = false)
     private Language language;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Verdict verdict;
-    private Long executionTimeMs;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubmissionStatus status;
+    private Double executionTimeMs;
     private Long memoryUsedKb;
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;
+    @Lob
+    private String errorMessage;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false,name="user_id")
     private User user;
