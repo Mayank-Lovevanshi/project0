@@ -26,6 +26,7 @@ public class Submission
     @Column(nullable = false)
     private Language language;
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Verdict verdict;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -40,10 +40,11 @@ public class SubmissionProcessingServiceImpl implements SubmissionProcessingServ
             submission.setStatus(SubmissionStatus.COMPLETED);
             applyResult(evaluationResult,submission);
             submissionRepository.save(submission);
+            Thread.sleep(10000);
         }
         catch (Exception e)
         {
-            submission.setStatus(SubmissionStatus.COMPLETED);
+            submission.setStatus(SubmissionStatus.FAILED);
             submission.setVerdict(Verdict.RUNTIME_ERROR);
             submission.setErrorMessage(e.getMessage());
             submissionRepository.save(submission);
