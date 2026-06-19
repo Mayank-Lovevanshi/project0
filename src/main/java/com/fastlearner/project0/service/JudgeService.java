@@ -6,7 +6,8 @@ import com.fastlearner.project0.enums.Language;
 
 public interface JudgeService
 {
-    public JudgeResult execute(String sourceCode, Language language,String input);
+    public String execute(String sourceCode, Language language,String input);
+    public JudgeResult getResult(String token);
     public Integer getJudge0LanguageId(Language language);
     public JudgeResult convertToJudgeResult(Judge0SubmissionResponse body);
 }

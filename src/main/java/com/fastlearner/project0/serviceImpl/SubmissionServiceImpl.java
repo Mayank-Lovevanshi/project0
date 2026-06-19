@@ -1,10 +1,9 @@
 package com.fastlearner.project0.serviceImpl;
-
-import com.fastlearner.project0.dto.evaluation.EvaluationResult;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.entity.*;
 import com.fastlearner.project0.enums.SubmissionStatus;
+import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
@@ -39,7 +38,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         submission.setLanguage(request.getLanguage());
         submission.setSourceCode(request.getSourceCode());
         submission.setStatus(SubmissionStatus.PENDING);
-        submission.setVerdict(null);
+        submission.setVerdict(Verdict.PENDING);
         submission.setSubmittedAt(LocalDateTime.now());
     }
 
@@ -63,7 +62,8 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Override
     public SubmissionResponse getSubmissionById(Long id) {
-        return null;
+        Submission submission = submissionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
+        return modelMapper.map(submission,SubmissionResponse.class);
     }
 
     @Override

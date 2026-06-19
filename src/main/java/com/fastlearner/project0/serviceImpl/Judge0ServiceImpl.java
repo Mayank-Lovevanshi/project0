@@ -2,6 +2,7 @@ package com.fastlearner.project0.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
 import com.fastlearner.project0.dto.judge0.JudgeResult;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.enums.Verdict;
@@ -26,7 +27,7 @@ public class Judge0ServiceImpl implements JudgeService
         this.objectMapper = objectMapper;
     }
     @Override
-    public JudgeResult execute(String sourceCode, Language language, String input)
+    public String execute(String sourceCode, Language language, String input)
     {
         Judge0SubmissionRequest request = new Judge0SubmissionRequest();
         request.setSourceCode(sourceCode);
@@ -42,19 +43,32 @@ public class Judge0ServiceImpl implements JudgeService
             // 2. Pass the raw JSON string directly instead of the object
             HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
             long start = System.currentTimeMillis();
-            ResponseEntity<Judge0SubmissionResponse> response = restTemplate.exchange(
+            ResponseEntity<Judge0TokenResponse> response = restTemplate.exchange(
                     judge0Url,
                     HttpMethod.POST,
                     entity,
-                    Judge0SubmissionResponse.class
+                    Judge0TokenResponse.class
             );
             System.out.println(System.currentTimeMillis()-start);
             System.out.println(response);
-            return convertToJudgeResult(response.getBody());
+            return response.getBody().getToken();
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize Judge0 request", e);
         }
+    }
+    @Override
+    public JudgeResult getResult(String token)
+    {
+        String url = judge0Url + "/" + token;
+        ResponseEntity<Judge0SubmissionResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                Judge0SubmissionResponse.class
+        );
+        Judge0SubmissionResponse judge0SubmissionResponse = response.getBody();
+        return convertToJudgeResult(judge0SubmissionResponse);
     }
     @Override
     public Integer getJudge0LanguageId(Language language) {
