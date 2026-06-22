@@ -42,7 +42,7 @@ public class TestCaseServiceImpl implements TestCaseService
         List<TestCaseResponse> sampleTestCases = new ArrayList<>();
         List<TestCase> allTestCases = testCaseRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
         for(TestCase testCase : allTestCases){
-            if(testCase.getTestCaseType()== TestCaseType.SAMPLE){
+            if(testCase.getTestCaseType()==TestCaseType.SAMPLE){
                 sampleTestCases.add(modelMapper.map(testCase, TestCaseResponse.class));
             }
         }

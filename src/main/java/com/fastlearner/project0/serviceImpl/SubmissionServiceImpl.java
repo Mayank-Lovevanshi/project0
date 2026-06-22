@@ -7,14 +7,17 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
+import com.fastlearner.project0.service.SubmissionEvaluatorService;
 import com.fastlearner.project0.service.SubmissionProcessingService;
 import com.fastlearner.project0.service.SubmissionService;
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
@@ -23,12 +26,14 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
     private final SubmissionProcessingService submissionProcessingService;
-    public SubmissionServiceImpl(SubmissionRepository submissionRepository, ModelMapper modelMapper, UserRepository userRepository, ProblemRepository problemRepository,  SubmissionProcessingService submissionProcessingService) {
+    private final SubmissionEvaluatorService submissionEvaluatorService;
+    public SubmissionServiceImpl(SubmissionRepository submissionRepository, ModelMapper modelMapper, UserRepository userRepository, ProblemRepository problemRepository, SubmissionProcessingService submissionProcessingService, SubmissionEvaluatorService submissionEvaluatorService) {
         this.submissionRepository = submissionRepository;
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.problemRepository = problemRepository;
         this.submissionProcessingService = submissionProcessingService;
+        this.submissionEvaluatorService = submissionEvaluatorService;
     }
 
     private void markSubmissionBeforeJudge(Submission submission,User user,Problem problem,CreateSubmissionRequest request)
@@ -56,10 +61,24 @@ public class SubmissionServiceImpl implements SubmissionService {
         Submission submission = new Submission();
         markSubmissionBeforeJudge(submission,user,problem,request);
         submissionRepository.save(submission);
-        submissionProcessingService.processSubmission(submission.getId());
+        //submissionProcessingService.processSubmission(submission.getId());
         return modelMapper.map(submission,SubmissionResponse.class);
     }
 
+    @Scheduled(fixedDelay = 1000)
+    public void processPendingSubmissions()
+    {
+        List<Submission> submissions = submissionRepository.findSubmissionsToJudge();
+        List<Long> submissionIds = new ArrayList<>();
+        if(submissions.isEmpty()) return;
+        for(Submission submission : submissions)
+        {
+            submission.setStatus(SubmissionStatus.RUNNING);
+            submissionIds.add(submission.getId());
+            submissionRepository.save(submission);
+        }
+        submissionProcessingService.processBatchSubmissions(submissionIds);
+    }
     @Override
     public SubmissionResponse getSubmissionById(Long id) {
         Submission submission = submissionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));

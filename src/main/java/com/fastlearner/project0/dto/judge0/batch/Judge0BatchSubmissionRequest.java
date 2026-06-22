@@ -1,18 +1,17 @@
 package com.fastlearner.project0.dto.judge0.batch;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
+import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
-
-public class Judge0BatchSubmissionRequest {
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Judge0BatchSubmissionRequest
+{
     private List<Judge0SubmissionRequest> submissions;
-
-    public List<Judge0SubmissionRequest> getSubmissions() {
-        return submissions;
-    }
-
-    public void setSubmissions(List<Judge0SubmissionRequest> submissions) {
-        this.submissions = submissions;
-    }
 }

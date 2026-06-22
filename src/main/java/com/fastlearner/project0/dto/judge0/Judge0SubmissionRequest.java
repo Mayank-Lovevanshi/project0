@@ -15,4 +15,6 @@ public class Judge0SubmissionRequest {
     @JsonProperty("language_id")
     private Integer languageId;
     private String stdin;
+    @JsonProperty("callback_url")
+    private String callbackUrl;
 }
