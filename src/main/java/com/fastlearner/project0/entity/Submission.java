@@ -36,6 +36,9 @@ public class Submission
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;
+    private String judge0Token;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
     @Lob
     private String errorMessage;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,5 +48,24 @@ public class Submission
     @JoinColumn(nullable = false,name = "problem_id")
     private Problem problem;
 }
+
+/*
+Submission
+-Long id
+-String sourceCode
+-Language language
+-Verdict verdict
+-SubmissionStatus status
+-Double executionTimeMs
+-Long memoryUserKb
+-Integer passedTestCases
+-LocalDateTime submittedAt
+-String errorMessage
+-User user
+-Problem problem
+-String judge0Token
+-LocalDateTime startedAt
+-LocalDateTime completedAt
+ */
 
 

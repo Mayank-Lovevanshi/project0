@@ -1,28 +1,35 @@
 package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
+import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.dto.judge0.JudgeResult;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.service.JudgeService;
+import com.fastlearner.project0.service.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.SubmissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/judge0")
 public class Judge0Controller
 {
-    private final JudgeService judge0Service;
+    private final SubmissionEvaluatorService submissionEvaluatorService;
 
-    public Judge0Controller(JudgeService judge0Service) {
-        this.judge0Service = judge0Service;
+    public Judge0Controller(SubmissionEvaluatorService submissionEvaluatorService) {
+        this.submissionEvaluatorService = submissionEvaluatorService;
     }
 
-    @PostMapping("/judge0/test")
-    public ResponseEntity<JudgeResult> execute(@RequestBody Judge0SubmissionRequest request)
+    @PutMapping("/result")
+    public void saveResult(@RequestBody Judge0SubmissionResponse judge0SubmissionResponse)
     {
-        System.out.println(request);
-        return new ResponseEntity<>(judge0Service.execute(request.getSourceCode(), Language.JAVA, request.getStdin()), HttpStatus.OK);
+        System.out.println("CAME!!!");
+        //submissionEvaluatorService.evaluate()
+    }
+    @PutMapping
+    public void test()
+    {
+        System.out.println("CAME!!!");
     }
 }
