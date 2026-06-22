@@ -13,7 +13,7 @@ public class EvaluationResult
     private Verdict verdict;
     private Integer passedTestCases;
     private Integer totalTestCases;
-    private Double executionTimeMs;
-    private Long memoryUsedKb;
+    private String executionTimeMs;
+    private Integer memoryUsedKb;
     private String errorMessage;
 }

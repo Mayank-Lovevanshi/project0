@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long>
 {
@@ -13,4 +14,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long>
     List<Submission> findSubmissionsToJudge();
     @Query(value = "SELECT *FROM submissionsWHERE id IN (:ids)", nativeQuery = true)
     List<Submission> findByIds(@Param("ids") List<Long> ids);
+    @Query(nativeQuery = true,value = "Select * from submission where token=(:token)")
+    Optional<Submission> findByToken(@Param("token")String token);
 }

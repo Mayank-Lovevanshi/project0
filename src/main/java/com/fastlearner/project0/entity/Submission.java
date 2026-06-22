@@ -31,12 +31,12 @@ public class Submission
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SubmissionStatus status;
-    private Double executionTimeMs;
-    private Long memoryUsedKb;
+    private String executionTimeMs;
+    private Integer memoryUsedKb;
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;
-    private String judge0Token;
+    private String token;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     @Lob

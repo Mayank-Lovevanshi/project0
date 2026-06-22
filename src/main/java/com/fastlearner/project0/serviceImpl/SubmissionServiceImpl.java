@@ -26,14 +26,13 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
     private final SubmissionProcessingService submissionProcessingService;
-    private final SubmissionEvaluatorService submissionEvaluatorService;
+
     public SubmissionServiceImpl(SubmissionRepository submissionRepository, ModelMapper modelMapper, UserRepository userRepository, ProblemRepository problemRepository, SubmissionProcessingService submissionProcessingService, SubmissionEvaluatorService submissionEvaluatorService) {
         this.submissionRepository = submissionRepository;
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.problemRepository = problemRepository;
         this.submissionProcessingService = submissionProcessingService;
-        this.submissionEvaluatorService = submissionEvaluatorService;
     }
 
     private void markSubmissionBeforeJudge(Submission submission,User user,Problem problem,CreateSubmissionRequest request)

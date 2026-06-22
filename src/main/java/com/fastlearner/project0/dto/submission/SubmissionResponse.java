@@ -17,8 +17,8 @@ public class SubmissionResponse
     private String problemTitle;
     private Language language;
     private Verdict verdict;
-    private Long executionTimeMs;
-    private Long memoryUsedKb;
+    private String executionTimeMs;
+    private Integer memoryUsedKb;
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;

@@ -1,38 +1,29 @@
 package com.fastlearner.project0.serviceImpl;
 
-import com.fastlearner.project0.dto.evaluation.EvaluationResult;
-import com.fastlearner.project0.dto.judge.JudgeDTO;
-import com.fastlearner.project0.dto.judge0.Judge0SubmissionRequest;
-import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
-import com.fastlearner.project0.dto.judge0.JudgeResult;
+
+import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.entity.Problem;
-import com.fastlearner.project0.entity.ProblemTemplate;
 import com.fastlearner.project0.entity.Submission;
 import com.fastlearner.project0.entity.TestCase;
-import com.fastlearner.project0.enums.Language;
+import com.fastlearner.project0.enums.SubmissionStatus;
 import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
-import com.fastlearner.project0.repository.ProblemTemplateRepository;
 import com.fastlearner.project0.repository.SubmissionRepository;
 import com.fastlearner.project0.repository.TestCaseRepository;
-import com.fastlearner.project0.service.JudgeService;
 import com.fastlearner.project0.service.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 @Service
 public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorService
 {
     private final TestCaseRepository testCaseRepository;
-    private final JudgeService judgeService;
-    private final ProblemTemplateRepository problemTemplateRepository;
     private final SubmissionRepository submissionRepository;
-    public SubmissionEvaluatorServiceImpl(TestCaseRepository testCaseRepository, JudgeService judgeService, ProblemTemplateRepository problemTemplateRepository, SubmissionRepository submissionRepository) {
+
+    public SubmissionEvaluatorServiceImpl(TestCaseRepository testCaseRepository, SubmissionRepository submissionRepository1) {
         this.testCaseRepository = testCaseRepository;
-        this.judgeService = judgeService;
-        this.problemTemplateRepository = problemTemplateRepository;
-        this.submissionRepository = submissionRepository;
+        this.submissionRepository = submissionRepository1;
     }
 
     private String normalize(String s)
@@ -58,82 +49,69 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
         }
         return passedTestCases;
     }
-    private EvaluationResult applyResults(JudgeResult result,StringBuilder expectedOutput,int size)
+    /*
+    public class Judge0SubmissionResponse
+{
+    private String stdout;
+    private String stderr;
+    private String compile_output;
+    private String time;
+    private Integer memory;
+    private Judge0Status status;
+    private String token;
+    private String message;
+}
+     */
+    private Verdict mapVerdict(Judge0SubmissionResponse response)
+    {
+        Integer statusId = response.getStatus().getId();
+
+        return switch (statusId)
+        {
+            case 3 -> Verdict.ACCEPTED;
+            case 5 -> Verdict.TIME_LIMIT_EXCEEDED;
+            case 6 -> Verdict.COMPILATION_ERROR;
+            case 7,8,9,10,11,12 -> Verdict.RUNTIME_ERROR;
+            default -> Verdict.SYSTEM_ERROR;
+        };
+    }
+    private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput, int size, Submission submission)
     {
         int passedTestCases=0;
-        String actualOutput = result.getOutput();
-        EvaluationResult evaluationResult = new EvaluationResult();
-        evaluationResult.setVerdict(result.getVerdict());
-        passedTestCases = getPassedTestCases(expectedOutput.toString(),actualOutput);
-        if(result.getVerdict().equals(Verdict.ACCEPTED))
+        String actualOutput = new String(Base64.getDecoder().decode(result.getStdout().trim()));
+        Verdict judgeVerdict = mapVerdict(result);
+        passedTestCases = getPassedTestCases(expectedOutput,actualOutput);
+        if(judgeVerdict.equals(Verdict.ACCEPTED))
         {
             Verdict verdict = passedTestCases==size ?  Verdict.ACCEPTED : Verdict.WRONG_ANSWER;
-            evaluationResult.setVerdict(verdict);
+            submission.setVerdict(verdict);
         }
-        evaluationResult.setPassedTestCases(passedTestCases);
-        evaluationResult.setExecutionTimeMs(result.getExecutionTimeMs()==null?0:result.getExecutionTimeMs());
-        evaluationResult.setMemoryUsedKb(result.getMemoryUsedKb()==0?0:result.getMemoryUsedKb());
-        evaluationResult.setTotalTestCases(size);
-        evaluationResult.setErrorMessage(result.getErrorMessage());
-        return evaluationResult;
+        submission.setPassedTestCases(passedTestCases);
+        submission.setExecutionTimeMs(result.getTime()==null?"0":result.getTime());
+        submission.setMemoryUsedKb(result.getMemory()==0?0:result.getMemory());
+        submission.setTotalTestCases(size);
+        submission.setErrorMessage(result.getMessage());
+        submission.setStatus(SubmissionStatus.COMPLETED);
     }
-    private void applyTestCasesData(List<TestCase> testCases,StringBuilder expectedOutput,StringBuilder input)
+    private String buildTestCasesData(List<TestCase> testCases)
     {
-        input.append(testCases.size());
-        input.append("\n");
+        StringBuilder expectedOutput = new StringBuilder();
         for(TestCase testCase : testCases)
         {
-            input.append(testCase.getInputData());
             expectedOutput.append(testCase.getExpectedOutput());
-            input.append("\n");
             expectedOutput.append("\n");
         }
+        return expectedOutput.toString();
     }
 
     @Override
-    public EvaluationResult evaluate(Problem problem, Language language, String sourceCode) {
+    public void evaluateResponse(Judge0SubmissionResponse response) {
+        Submission submission = submissionRepository.findByToken(response.getToken()).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
+        Problem problem = submission.getProblem();
         List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
-
-        ProblemTemplate problemTemplate = problemTemplateRepository.findByProblemAndLanguage(problem,language).orElseThrow(()->new ResourceNotFoundException("DRIVER_CODE_NOT_FOUND_SubmissionServiceImpl"));
-        String driverCode = problemTemplate.getDriverCode();
-        String finalCode = driverCode+"\n"+sourceCode;
-        StringBuilder input = new StringBuilder();
-        StringBuilder expectedOutput = new StringBuilder();
-        applyTestCasesData(testCases,input,expectedOutput);
-        String token =
-                judgeService.execute(
-                        finalCode,
-                        language,
-                        input.toString()
-                );
-        JudgeResult result = judgeService.getResult(token);
-
-        return applyResults(result,expectedOutput,testCases.size());
+        String expectedOutput = buildTestCasesData(testCases);
+        modifySubmission(response,expectedOutput,testCases.size(),submission);
+        submissionRepository.save(submission);
     }
-    /*
-    //@Override
-    public void evaluateBatch(List<Submission> submissions) {
-        List<JudgeDTO> submissionsToJudge = new ArrayList<>();
-        for(Submission submission : submissions)
-        {
-            Problem problem = submission.getProblem();
-            Language language = submission.getLanguage();
-            String sourceCode = submission.getSourceCode();
-            ProblemTemplate problemTemplate = problemTemplateRepository.findByProblemAndLanguage(problem,language).orElseThrow(()->new ResourceNotFoundException("DRIVER_CODE_NOT_FOUND_SubmissionServiceImpl"));
-            String driverCode = problemTemplate.getDriverCode();
-            String finalCode = driverCode+"\n"+sourceCode;
-            List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
-            StringBuilder expectedOutput = new StringBuilder();
-            StringBuilder input = new StringBuilder();
-            applyTestCasesData(testCases,input,expectedOutput);
-            submissionsToJudge.add(new JudgeDTO(finalCode,language,input.toString()));
-        }
-        String[] tokens = judgeService.executeBatch(submissionsToJudge);
-        for(int i=0;i<tokens.length;i++)
-        {
-            submissions.get(i).setJudge0Token(tokens[i]);
-            submissionRepository.save(submissions.get(i));
-        }
-    }
-     */
+
 }
