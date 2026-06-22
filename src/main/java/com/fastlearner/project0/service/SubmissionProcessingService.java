@@ -6,6 +6,5 @@ import java.util.List;
 
 public interface SubmissionProcessingService
 {
-    public void processSubmission(Long submissionId);
     public void processBatchSubmissions(List<Long>  submissionIds);
 }

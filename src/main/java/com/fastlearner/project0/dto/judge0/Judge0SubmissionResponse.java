@@ -12,7 +12,9 @@ public class Judge0SubmissionResponse
     private String stdout;
     private String stderr;
     private String compile_output;
-    private Double time;
-    private Long memory;
+    private String time;
+    private Integer memory;
     private Judge0Status status;
+    private String token;
+    private String message;
 }
