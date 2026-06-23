@@ -59,11 +59,12 @@ Submission
 -Double executionTimeMs
 -Long memoryUserKb
 -Integer passedTestCases
+-Integer totalTestCases
 -LocalDateTime submittedAt
 -String errorMessage
 -User user
 -Problem problem
--String judge0Token
+-String token
 -LocalDateTime startedAt
 -LocalDateTime completedAt
  */

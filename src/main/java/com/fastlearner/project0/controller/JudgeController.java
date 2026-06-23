@@ -1,9 +1,6 @@
 package com.fastlearner.project0.controller;
-
-import com.fastlearner.project0.dto.judge0.Judge0Status;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
-import com.fastlearner.project0.enums.Verdict;
-import com.fastlearner.project0.service.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.DecoderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +10,11 @@ import java.util.Base64;
 @RequestMapping("/api/judge0")
 public class JudgeController
 {
-    private final SubmissionEvaluatorService submissionEvaluatorService;
-
-    public JudgeController(SubmissionEvaluatorService submissionEvaluatorService) {
-        this.submissionEvaluatorService = submissionEvaluatorService;
+    private final DecoderService decoderService;
+    public JudgeController(DecoderService decoderService) {
+        this.decoderService = decoderService;
     }
+
     /*
     public class Judge0SubmissionResponse
     {
@@ -42,11 +39,7 @@ public class JudgeController
     @PutMapping("/result")
     public ResponseEntity<Void> saveResult(@RequestBody Judge0SubmissionResponse body)
     {
-        System.out.println("+++++++++++++++++++++++++++++++");
-        System.out.println(body);
-        System.out.println("+++++++++++++++++++++++++++++++");
-        body.setStdout(body.getStdout().trim());
-        submissionEvaluatorService.evaluateResponse(body);
+        decoderService.decode(body);
         return ResponseEntity.ok().build();
     }
     @PutMapping

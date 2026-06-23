@@ -73,6 +73,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         for(Submission submission : submissions)
         {
             submission.setStatus(SubmissionStatus.RUNNING);
+            submission.setStartedAt(LocalDateTime.now());
             submissionIds.add(submission.getId());
             submissionRepository.save(submission);
         }

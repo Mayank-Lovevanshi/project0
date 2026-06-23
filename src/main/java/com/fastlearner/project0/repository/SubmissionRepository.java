@@ -12,7 +12,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long>
 {
     @Query(nativeQuery = true,value = "SELECT * FROM submission WHERE status = 'PENDING' ORDER BY submitted_at ASC LIMIT 10")
     List<Submission> findSubmissionsToJudge();
-    @Query(value = "SELECT *FROM submissionsWHERE id IN (:ids)", nativeQuery = true)
+    @Query(value = "SELECT * FROM submission WHERE id IN (:ids)", nativeQuery = true)
     List<Submission> findByIds(@Param("ids") List<Long> ids);
     @Query(nativeQuery = true,value = "Select * from submission where token=(:token)")
     Optional<Submission> findByToken(@Param("token")String token);

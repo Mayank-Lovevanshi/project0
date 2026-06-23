@@ -13,6 +13,7 @@ import com.fastlearner.project0.repository.TestCaseRepository;
 import com.fastlearner.project0.service.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 @Service
@@ -78,21 +79,58 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
     private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput, int size, Submission submission)
     {
         int passedTestCases=0;
-        String actualOutput = new String(Base64.getDecoder().decode(result.getStdout().trim()));
+        String actualOutput = result.getStdout();
         Verdict judgeVerdict = mapVerdict(result);
         passedTestCases = getPassedTestCases(expectedOutput,actualOutput);
+        submission.setVerdict(judgeVerdict);
         if(judgeVerdict.equals(Verdict.ACCEPTED))
         {
             Verdict verdict = passedTestCases==size ?  Verdict.ACCEPTED : Verdict.WRONG_ANSWER;
             submission.setVerdict(verdict);
         }
+        if(judgeVerdict.equals(Verdict.COMPILATION_ERROR))
+        {
+            submission.setErrorMessage(result.getCompileOutput());
+        }
+        else if(judgeVerdict.equals(Verdict.RUNTIME_ERROR))
+        {
+            submission.setErrorMessage(result.getStderr());
+        }
+        else
+        {
+            submission.setErrorMessage(result.getMessage());
+        }
         submission.setPassedTestCases(passedTestCases);
         submission.setExecutionTimeMs(result.getTime()==null?"0":result.getTime());
-        submission.setMemoryUsedKb(result.getMemory()==0?0:result.getMemory());
+        submission.setMemoryUsedKb(result.getMemory()==null?0:result.getMemory());
+        if(judgeVerdict.equals(Verdict.RUNTIME_ERROR))
+        {
+            if(submission.getMemoryUsedKb()>=128000) submission.setVerdict(Verdict.MEMORY_LIMIT_EXCEEDED);
+        }
         submission.setTotalTestCases(size);
-        submission.setErrorMessage(result.getMessage());
         submission.setStatus(SubmissionStatus.COMPLETED);
+        submission.setCompletedAt(LocalDateTime.now());
     }
+    /*
+Submission
+-Long id
+-String sourceCode
+-Language language
+-Verdict verdict
+-SubmissionStatus status
+-Double executionTimeMs
+-Long memoryUserKb
+-Integer passedTestCases
+-Integer totalTestCases
+-LocalDateTime submittedAt
+-String errorMessage
+-User user
+-Problem problem
+-String token
+-LocalDateTime startedAt
+-LocalDateTime completedAt
+ */
+
     private String buildTestCasesData(List<TestCase> testCases)
     {
         StringBuilder expectedOutput = new StringBuilder();
