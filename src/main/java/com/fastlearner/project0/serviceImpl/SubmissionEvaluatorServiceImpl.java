@@ -13,6 +13,7 @@ import com.fastlearner.project0.repository.TestCaseRepository;
 import com.fastlearner.project0.service.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
@@ -149,6 +150,10 @@ Submission
         List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
         String expectedOutput = buildTestCasesData(testCases);
         modifySubmission(response,expectedOutput,testCases.size(),submission);
+        long totalTimeMs = Duration.between(submission.getSubmittedAt(), submission.getCompletedAt()).toMillis();
+        long judgeProcessingTime = Duration.between(submission.getStartedAt(), submission.getCompletedAt()).toMillis();
+        System.out.println("Judge processing time: " + judgeProcessingTime);
+        System.out.println("Total time: " + totalTimeMs);
         submissionRepository.save(submission);
     }
 

@@ -54,4 +54,6 @@ public class Problem
     private List<ProblemTemplate> problemTemplates = new ArrayList<>();
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "problem",cascade = CascadeType.ALL)
     private List<TestCase> testCases = new ArrayList<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    private Structure structure;
 }
