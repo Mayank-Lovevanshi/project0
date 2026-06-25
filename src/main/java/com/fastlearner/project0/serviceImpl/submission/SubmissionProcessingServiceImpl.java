@@ -13,7 +13,7 @@ import com.fastlearner.project0.repository.SubmissionRepository;
 import com.fastlearner.project0.repository.TestCaseRepository;
 import com.fastlearner.project0.service.judge.JudgeService;
 import com.fastlearner.project0.service.submission.SubmissionProcessingService;
-import com.fastlearner.project0.service.util.CodeGeneratorService;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +59,8 @@ public class SubmissionProcessingServiceImpl implements SubmissionProcessingServ
             Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("DRIVER_CODE_NOT_FOUND_SubmissionServiceImpl"));
             String driverCode = codeGeneratorService.generateDriverCode(structure, language);
             String inputParserCode = codeGeneratorService.generateInputUtilityCode(language);
-            String finalCode = driverCode+"\n"+sourceCode+"\n"+inputParserCode;
+            String outputParserCode = codeGeneratorService.generateJavaOutputUtilityCode(language);
+            String finalCode = driverCode+"\n"+sourceCode+"\n"+inputParserCode+"\n"+outputParserCode;
             List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
             StringBuilder input = new StringBuilder();
             applyTestCasesData(testCases,input);

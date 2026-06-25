@@ -1,7 +1,7 @@
-package com.fastlearner.project0.serviceImpl.util;
+package com.fastlearner.project0.serviceImpl.codeGenerator;
 import com.fastlearner.project0.enums.Datatype;
 import com.fastlearner.project0.exceptions.DatatypeNotSupportedException;
-import com.fastlearner.project0.service.util.DatatypeMappingService;
+import com.fastlearner.project0.service.codeGenerator.DatatypeMappingService;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,9 +13,9 @@ public class DatatypeMappingServiceImpl implements DatatypeMappingService
         StringBuilder type = new StringBuilder(switch (parameter.getBaseType()) {
             case STRING -> "string";
             case INTEGER -> "int";
-            case BOOLEAN -> "boolean";
+            case BOOLEAN -> "bool";
             case DOUBLE -> "double";
-            case LONG -> "long";
+            case LONG -> "long long";
             case CHARACTER ->"char";
         });
        for(int i=0;i< parameter.getDimensions();i++)
@@ -75,7 +75,7 @@ public class DatatypeMappingServiceImpl implements DatatypeMappingService
                 case BOOLEAN -> "InputParser.readBooleanMatrix(input)";
                 case DOUBLE -> "InputParser.readDoubleMatrix(input)";
                 case STRING -> "InputParser.readStringMatrix(input)";
-                case CHARACTER -> "InputParser.readCharArray(input)";
+                case CHARACTER -> "InputParser.readCharMatrix(input)";
             };
         }
         throw new DatatypeNotSupportedException("Dimension > 2 not supported");
