@@ -3,7 +3,7 @@ package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.auth.LoginDTO;
 import com.fastlearner.project0.dto.auth.LoginResponseDTO;
 import com.fastlearner.project0.dto.auth.RegisterDTO;
-import com.fastlearner.project0.service.AuthService;
+import com.fastlearner.project0.service.auth.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

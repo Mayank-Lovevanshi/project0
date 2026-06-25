@@ -1,6 +1,8 @@
 package com.fastlearner.project0.enums;
 
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,14 +13,15 @@ import lombok.NoArgsConstructor;
 @Embeddable
 public class Datatype
 {
+    @Enumerated(EnumType.STRING)
     private BaseType baseType;
-    private int dimension;
+    private Integer dimensions;
     public boolean isPrimitive()
     {
-        return dimension == 0;
+        return dimensions == 0;
     }
     public boolean isArray()
     {
-        return dimension>1;
+        return dimensions>=1;
     }
 }

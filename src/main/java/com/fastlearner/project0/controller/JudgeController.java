@@ -1,10 +1,8 @@
 package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
-import com.fastlearner.project0.service.DecoderService;
+import com.fastlearner.project0.service.util.DecoderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/judge0")

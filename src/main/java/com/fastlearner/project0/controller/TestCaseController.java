@@ -2,7 +2,7 @@ package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.testcases.CreateTestCaseRequest;
 import com.fastlearner.project0.dto.testcases.TestCaseResponse;
-import com.fastlearner.project0.service.TestCaseService;
+import com.fastlearner.project0.service.testcases.TestCaseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
