@@ -1,4 +1,4 @@
-package com.fastlearner.project0.service.util;
+package com.fastlearner.project0.service.codeGenerator;
 
 import com.fastlearner.project0.enums.Datatype;
 

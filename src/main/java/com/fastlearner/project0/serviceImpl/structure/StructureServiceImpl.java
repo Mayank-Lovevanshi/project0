@@ -11,7 +11,7 @@ import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.ProblemRepository;
 import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.structure.StructureService;
-import com.fastlearner.project0.service.util.CodeGeneratorService;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -40,15 +40,17 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public StructureDTO updateProblemTemplate(StructureDTO structureRequestDTO, Long templateId, Long problemId) {
-        if(problemId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_ID_ProblemTemplateServiceImpl");
-        if(templateId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_TEMPLATE_ID_ProblemTemplateImpl");
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND_ProblemTemplateServiceImpl"));
-        Structure structure = modelMapper.map(structureRequestDTO,Structure.class);
-        structure.setProblem(problem);
-        structure.setMethodName(structureRequestDTO.getMethodName());
-        structure.setReturnType(structureRequestDTO.getReturnType());
-        structure.setParameters(structureRequestDTO.getParameters());
-        Structure saved = structureRepository.save(structure);
+        Structure existing = structureRepository
+                .findById(templateId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("RESOURCE_NOT_FOUND_TEMPLATE_PROBLEM"));
+
+        existing.setMethodName(structureRequestDTO.getMethodName());
+        existing.setReturnType(structureRequestDTO.getReturnType());
+        existing.setParameters(structureRequestDTO.getParameters());
+
+        Structure saved =
+                structureRepository.save(existing);
         return modelMapper.map(saved,StructureDTO.class);
     }
 

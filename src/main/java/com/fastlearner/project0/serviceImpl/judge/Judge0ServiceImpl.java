@@ -8,21 +8,15 @@ import com.fastlearner.project0.dto.judge0.batch.Judge0BatchSubmissionRequest;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.exceptions.UnsupportedLanguageException;
 import com.fastlearner.project0.service.judge.JudgeService;
-import com.fastlearner.project0.service.util.CodeGeneratorService;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 @Service

@@ -19,7 +19,7 @@ public class Structure
     Long id;
     @Column(nullable = false)
     private String methodName;
-    @Column(nullable = false)
+    @Embedded
     private Datatype returnType;
     @Column(nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
