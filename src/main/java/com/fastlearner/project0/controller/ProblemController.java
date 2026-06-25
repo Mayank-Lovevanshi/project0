@@ -3,7 +3,7 @@ package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.problem.CreateProblemRequest;
 import com.fastlearner.project0.dto.problem.ProblemResponse;
 import com.fastlearner.project0.dto.problem.UpdateProblemRequest;
-import com.fastlearner.project0.service.ProblemService;
+import com.fastlearner.project0.service.problem.ProblemService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

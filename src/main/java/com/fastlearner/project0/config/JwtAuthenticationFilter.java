@@ -1,6 +1,6 @@
 package com.fastlearner.project0.config;
 
-import com.fastlearner.project0.service.JwtService;
+import com.fastlearner.project0.service.auth.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

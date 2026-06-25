@@ -2,7 +2,7 @@ package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
-import com.fastlearner.project0.service.SubmissionService;
+import com.fastlearner.project0.service.submission.SubmissionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

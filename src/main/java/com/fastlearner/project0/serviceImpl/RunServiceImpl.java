@@ -3,7 +3,7 @@ package com.fastlearner.project0.serviceImpl;
 import com.fastlearner.project0.dto.run.RunRequestDTO;
 import com.fastlearner.project0.dto.run.RunResponseDTO;
 import com.fastlearner.project0.repository.TestCaseRepository;
-import com.fastlearner.project0.service.ProblemService;
+import com.fastlearner.project0.service.problem.ProblemService;
 import com.fastlearner.project0.service.RunService;
 import org.springframework.stereotype.Service;
 

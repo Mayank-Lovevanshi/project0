@@ -21,9 +21,10 @@ public class Structure
     private String methodName;
     @Column(nullable = false)
     private Datatype returnType;
-    @OneToMany(cascade = CascadeType.ALL)
     @Column(nullable = false)
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Parameter> parameters;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "structure")
+    @JoinColumn(name = "problem_id")
+    @OneToOne(cascade = CascadeType.ALL)
     private Problem problem;
 }
