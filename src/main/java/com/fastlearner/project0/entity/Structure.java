@@ -25,6 +25,6 @@ public class Structure
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Parameter> parameters;
     @JoinColumn(name = "problem_id")
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH},fetch = FetchType.LAZY)
     private Problem problem;
 }

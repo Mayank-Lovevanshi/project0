@@ -5,10 +5,10 @@ import com.fastlearner.project0.enums.Language;
 
 public interface BoilerplateGeneratorService
 {
-    public String generateJavaDriverCode(Structure structure);
-    public String generateJavaStarterCode(Structure structure);
-    public String generateCppStarterCode(Structure structure);
-    public String generateCppDriverCode(Structure structure);
-    public String generatePythonStarterCode(Structure structure);
-    public String generatePythonDriverCode(Structure structure);
+    public StringBuilder generateJavaDriverCode(Structure structure);
+    public StringBuilder generateJavaStarterCode(Structure structure);
+    public StringBuilder generateCppStarterCode(Structure structure);
+    public StringBuilder generateCppDriverCode(Structure structure);
+    public StringBuilder generatePythonStarterCode(Structure structure);
+    public StringBuilder generatePythonDriverCode(Structure structure);
 }

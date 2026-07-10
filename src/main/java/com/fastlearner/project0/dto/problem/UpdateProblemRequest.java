@@ -18,6 +18,6 @@ public class UpdateProblemRequest
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMs;
+    private Integer memoryLimitKb;
     private ProblemStatus status;
 }

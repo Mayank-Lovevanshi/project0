@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 public class OutputParserImpl implements OutputParser
 {
     @Override
-    public String generateJavaOutputUtilityCode() {
-        return """
+    public StringBuilder generateJavaOutputUtilityCode() {
+        StringBuilder sb =  new  StringBuilder();
+                sb.append("""
                 class Print {
                \s
                         public static void print(int[] arr) {
@@ -111,16 +112,17 @@ public class OutputParserImpl implements OutputParser
                             }
                         }
                     }
-               \s""";
+               \s""");
+                return sb;
     }
 
     @Override
-    public String generateCppOutputUtilityCode() {
-        return "";
+    public StringBuilder generateCppOutputUtilityCode() {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonOutputUtilityCode() {
-        return "";
+    public StringBuilder generatePythonOutputUtilityCode() {
+        return new  StringBuilder();
     }
 }

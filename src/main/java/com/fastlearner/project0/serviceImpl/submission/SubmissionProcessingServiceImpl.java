@@ -3,17 +3,14 @@ package com.fastlearner.project0.serviceImpl.submission;
 import com.fastlearner.project0.dto.judge.JudgeDTO;
 import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
 import com.fastlearner.project0.entity.Problem;
-import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.entity.Submission;
-import com.fastlearner.project0.entity.TestCase;
-import com.fastlearner.project0.enums.Language;
-import com.fastlearner.project0.exceptions.ResourceNotFoundException;
-import com.fastlearner.project0.repository.StructureRepository;
+import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.repository.SubmissionRepository;
-import com.fastlearner.project0.repository.TestCaseRepository;
 import com.fastlearner.project0.service.judge.JudgeService;
 import com.fastlearner.project0.service.submission.SubmissionProcessingService;
-import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import com.fastlearner.project0.serviceImpl.util.SourceCodeFactory;
+import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -21,56 +18,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SubmissionProcessingServiceImpl implements SubmissionProcessingService {
     private final SubmissionRepository submissionRepository;
-    private final StructureRepository structureRepository;
-    private final TestCaseRepository testCaseRepository;
+    private final SourceCodeFactory sourceCodeFactory;
     private final JudgeService judgeService;
-    private final CodeGeneratorService codeGeneratorService;
-
-    public SubmissionProcessingServiceImpl(SubmissionRepository submissionRepository, StructureRepository structureRepository, TestCaseRepository testCaseRepository, JudgeService judgeService, CodeGeneratorService codeGeneratorService) {
-        this.submissionRepository = submissionRepository;
-        this.structureRepository = structureRepository;
-        this.testCaseRepository = testCaseRepository;
-        this.judgeService = judgeService;
-        this.codeGeneratorService = codeGeneratorService;
-    }
-    private void applyTestCasesData(List<TestCase> testCases,StringBuilder input)
-    {
-        input.append(testCases.size());
-        input.append("\n");
-        for(TestCase testCase : testCases)
-        {
-            input.append(testCase.getInputData());
-            input.append("\n");
-        }
-    }
+    private final TestcaseFactory testcaseFactory;
 
     @Override
-    @Async
+    @Async("judgeTaskExecutor") // <-- Change line 50 to this
     public void processBatchSubmissions(List<Long> submissionIds) {
         List<Submission> submissions = submissionRepository.findAllById(submissionIds);
-        List<JudgeDTO> submissionsToJudge = new ArrayList<>();
+         submissionsToJudge = new ArrayList<>();
         for(Submission submission : submissions)
         {
             Problem problem = submission.getProblem();
-            Language language = submission.getLanguage();
-            String sourceCode = submission.getSourceCode();
-            Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("DRIVER_CODE_NOT_FOUND_SubmissionServiceImpl"));
-            String driverCode = codeGeneratorService.generateDriverCode(structure, language);
-            String inputParserCode = codeGeneratorService.generateInputUtilityCode(language);
-            String outputParserCode = codeGeneratorService.generateJavaOutputUtilityCode(language);
-            String finalCode = driverCode+"\n"+sourceCode+"\n"+inputParserCode+"\n"+outputParserCode;
-            List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
-            StringBuilder input = new StringBuilder();
-            applyTestCasesData(testCases,input);
-            submissionsToJudge.add(new JudgeDTO(finalCode,language,input.toString()));
+            String finalCode = sourceCodeFactory.getSourceCode(problem.getId(), submission.getLanguage(),submission.getSourceCode());
+            String input = testcaseFactory.buildTestcases(problem.getId(), TestCaseType.HIDDEN);
+            submissionsToJudge.add(new JudgeDTO(finalCode,submission.getLanguage(),input));
         }
         Judge0TokenResponse[] tokens = judgeService.executeBatch(submissionsToJudge);
         for(int i=0;i<tokens.length;i++)
         {
             submissions.get(i).setToken(tokens[i].getToken());
-            submissionRepository.save(submissions.get(i));
+            //submissionRepository.save(submissions.get(i));
         }
+// 3. Save EVERYTHING to the database in a single batch call
+        submissionRepository.saveAll(submissions); // <-- CHANGE THIS TO saveAll()
     }
 }

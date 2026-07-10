@@ -39,7 +39,7 @@ public class Problem
     @Column(nullable = false)
     private Integer timeLimitMs;
     @Column(nullable = false)
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProblemStatus status;
@@ -52,6 +52,8 @@ public class Problem
     private User createdBy;
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "problem",cascade = CascadeType.ALL)
     private List<TestCase> testCases = new ArrayList<>();
-    @OneToOne(fetch = FetchType.LAZY,mappedBy = "problem")
+    @OneToOne(mappedBy = "problem",cascade = CascadeType.ALL)
     private Structure structure;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "problem") // mappedBy bacha hai
+    private List<Submission> submissions = new ArrayList<>();
 }

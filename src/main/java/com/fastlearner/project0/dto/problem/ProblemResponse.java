@@ -23,7 +23,7 @@ public class ProblemResponse
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
     private ProblemStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,6 +1,7 @@
 package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.service.util.DecoderService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,14 +36,9 @@ public class JudgeController
     }
  */
     @PutMapping("/result")
-    public ResponseEntity<Void> saveResult(@RequestBody Judge0SubmissionResponse body)
+    @ResponseStatus(HttpStatus.OK)
+    public void saveResult(@RequestBody Judge0SubmissionResponse body)
     {
         decoderService.decode(body);
-        return ResponseEntity.ok().build();
-    }
-    @PutMapping
-    public void test()
-    {
-        System.out.println("CAME!!!");
     }
 }

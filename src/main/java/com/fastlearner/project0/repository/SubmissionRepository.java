@@ -1,6 +1,7 @@
 package com.fastlearner.project0.repository;
 
 import com.fastlearner.project0.entity.Submission;
+import com.fastlearner.project0.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +17,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long>
     List<Submission> findByIds(@Param("ids") List<Long> ids);
     @Query(nativeQuery = true,value = "Select * from submission where token=(:token)")
     Optional<Submission> findByToken(@Param("token")String token);
+    List<Submission> findByProblemId(Long problemId);
+    List<Submission> findByUserEmail(String email);
 }

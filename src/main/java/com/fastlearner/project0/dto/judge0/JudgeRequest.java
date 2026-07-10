@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Judge0SubmissionRequest {
+public class JudgeRequest {
     @JsonProperty("source_code")
     private String sourceCode;
     @JsonProperty("language_id")

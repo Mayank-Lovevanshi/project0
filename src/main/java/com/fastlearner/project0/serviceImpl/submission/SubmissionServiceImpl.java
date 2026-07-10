@@ -1,4 +1,5 @@
 package com.fastlearner.project0.serviceImpl.submission;
+import com.fastlearner.project0.dto.job.Job;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.entity.*;
@@ -7,33 +8,34 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
+import com.fastlearner.project0.service.execution.ExecutionService;
+import com.fastlearner.project0.service.execution.queue.ExecutionQueue;
 import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
 import com.fastlearner.project0.service.submission.SubmissionProcessingService;
 import com.fastlearner.project0.service.submission.SubmissionService;
+import com.fastlearner.project0.serviceImpl.job.SubmissionJobFactory;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Service
+@RequiredArgsConstructor
 public class SubmissionServiceImpl implements SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
-    private final SubmissionProcessingService submissionProcessingService;
-
-    public SubmissionServiceImpl(SubmissionRepository submissionRepository, ModelMapper modelMapper, UserRepository userRepository, ProblemRepository problemRepository, SubmissionProcessingService submissionProcessingService, SubmissionEvaluatorService submissionEvaluatorService) {
-        this.submissionRepository = submissionRepository;
-        this.modelMapper = modelMapper;
-        this.userRepository = userRepository;
-        this.problemRepository = problemRepository;
-        this.submissionProcessingService = submissionProcessingService;
-    }
+    private final SubmissionJobFactory submissionJobFactory;
+    private final ExecutionQueue executionQueue;
 
     private void markSubmissionBeforeJudge(Submission submission,User user,Problem problem,CreateSubmissionRequest request)
     {
@@ -47,38 +49,24 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
     @Override
-    public SubmissionResponse submit(CreateSubmissionRequest request)
+    public CompletableFuture<SubmissionResponse> submit(CreateSubmissionRequest request)
     {
         Long problemId = request.getProblemId();
         if(problemId == null || problemId <= 0) throw new IllegalArgumentException("INVALID_PROBLEM_ID");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null) throw new AuthenticationException("AUTHENTICATION_NEEDED");
-
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND"));
         Problem problem = problemRepository.findById(problemId).orElseThrow(() -> new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+
         Submission submission = new Submission();
         markSubmissionBeforeJudge(submission,user,problem,request);
         submissionRepository.save(submission);
-        //submissionProcessingService.processSubmission(submission.getId());
-        return modelMapper.map(submission,SubmissionResponse.class);
+        Job<SubmissionResponse> job = submissionJobFactory.createJob(request);
+        executionQueue.enqueue(job);
+        return job.getFuture();
     }
 
-    @Scheduled(fixedDelay = 1000)
-    public void processPendingSubmissions()
-    {
-        List<Submission> submissions = submissionRepository.findSubmissionsToJudge();
-        List<Long> submissionIds = new ArrayList<>();
-        if(submissions.isEmpty()) return;
-        for(Submission submission : submissions)
-        {
-            submission.setStatus(SubmissionStatus.RUNNING);
-            submission.setStartedAt(LocalDateTime.now());
-            submissionIds.add(submission.getId());
-            submissionRepository.save(submission);
-        }
-        submissionProcessingService.processBatchSubmissions(submissionIds);
-    }
     @Override
     public SubmissionResponse getSubmissionById(Long id) {
         Submission submission = submissionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
@@ -87,11 +75,14 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Override
     public List<SubmissionResponse> getSubmissionsByProblemId(Long problemId) {
-        return null;
+       List<Submission> submissions =  submissionRepository.findByProblemId(problemId);
+       return submissions.stream().map(submission -> modelMapper.map( submission,SubmissionResponse.class)).toList();
     }
 
     @Override
     public List<SubmissionResponse> getMySubmissions() {
-        return null;
+        UserDetails currentUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Submission> submissions = submissionRepository.findByUserEmail(currentUser.getUsername());
+        return submissions.stream().map(submission->modelMapper.map(submission,SubmissionResponse.class)).toList();
     }
 }

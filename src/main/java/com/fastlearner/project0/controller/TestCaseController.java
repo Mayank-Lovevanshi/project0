@@ -1,6 +1,8 @@
 package com.fastlearner.project0.controller;
 
+import com.fastlearner.project0.dto.testcases.CreateTestCaseBatchRequest;
 import com.fastlearner.project0.dto.testcases.CreateTestCaseRequest;
+import com.fastlearner.project0.dto.testcases.TestCaseBatchResponse;
 import com.fastlearner.project0.dto.testcases.TestCaseResponse;
 import com.fastlearner.project0.service.testcases.TestCaseService;
 import jakarta.validation.Valid;
@@ -24,6 +26,12 @@ public class TestCaseController
     public ResponseEntity<TestCaseResponse> createTestCase(@PathVariable Long problemId, @RequestBody @Valid CreateTestCaseRequest testCaseDTO)
     {
         return new ResponseEntity<>(testCaseService.createTestCase(problemId,testCaseDTO), HttpStatus.CREATED);
+    }
+    @PostMapping("/problems/{problemId}/testcases/batch")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TestCaseBatchResponse> createTestCasesInBatch(@PathVariable Long problemId, @RequestBody @Valid CreateTestCaseBatchRequest testCaseDTO)
+    {
+        return new ResponseEntity<>(testCaseService.createTestCaseBatch(problemId,testCaseDTO), HttpStatus.CREATED);
     }
     @GetMapping("/problems/{problemId}/sample-testcases")
     public ResponseEntity<List<TestCaseResponse>> getSampleTestCases(@PathVariable Long problemId)
