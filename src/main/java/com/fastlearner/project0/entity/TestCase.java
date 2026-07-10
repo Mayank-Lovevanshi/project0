@@ -26,7 +26,7 @@ public class TestCase
     private TestCaseType testCaseType;
     @Column(nullable = false)
     private Integer sequenceNumber;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // CascadeType.REFRESH
     @JoinColumn(name = "problem_id")
     private Problem problem;
 }

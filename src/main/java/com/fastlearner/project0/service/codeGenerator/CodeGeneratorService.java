@@ -5,8 +5,8 @@ import com.fastlearner.project0.enums.Language;
 
 public interface CodeGeneratorService
 {
-    public String generateDriverCode(Structure structure, Language language);
-    public String generateStarterCode(Structure structure, Language language);
-    public String generateInputUtilityCode(Language language);
-    public String generateJavaOutputUtilityCode(Language language);
+    public StringBuilder generateDriverCode(Structure structure, Language language);
+    public StringBuilder generateStarterCode(Structure structure, Language language);
+    public StringBuilder generateInputUtilityCode(Language language);
+    public StringBuilder generateJavaOutputUtilityCode(Language language);
 }

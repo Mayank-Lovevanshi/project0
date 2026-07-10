@@ -17,5 +17,5 @@ public class CreateProblemRequest
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
 }

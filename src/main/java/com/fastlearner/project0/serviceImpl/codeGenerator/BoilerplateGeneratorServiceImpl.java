@@ -16,7 +16,7 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         this.datatypeMapping = datatypeMapping;
     }
 
-    public String generateCppStarterCode(Structure structure)
+    public StringBuilder generateCppStarterCode(Structure structure)
     {
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
@@ -34,10 +34,10 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         code.append("\n");
         code.append("\t}");
         code.append("\n};");
-        return code.toString();
+        return code;
     }
 
-    public String generateJavaStarterCode(Structure structure)
+    public StringBuilder generateJavaStarterCode(Structure structure)
     {
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
@@ -54,10 +54,10 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         code.append("\n");
         code.append("\t}");
         code.append("\n}");
-        return code.toString();
+        return code;
     }
 
-    public String generateJavaDriverCode(Structure structure)
+    public StringBuilder generateJavaDriverCode(Structure structure)
     {
         StringBuilder code = new StringBuilder();
         int n = structure.getParameters().size();
@@ -85,21 +85,21 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         code.append("\t\t}\n");
         code.append("\t}\n");
         code.append("}\n");
-        return code.toString();
+        return code;
     }
 
     @Override
-    public String generateCppDriverCode(Structure structure) {
-        return "";
+    public StringBuilder generateCppDriverCode(Structure structure) {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonStarterCode(Structure structure) {
-        return "";
+    public StringBuilder generatePythonStarterCode(Structure structure) {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonDriverCode(Structure structure) {
-        return "";
+    public StringBuilder generatePythonDriverCode(Structure structure) {
+        return new  StringBuilder();
     }
 }

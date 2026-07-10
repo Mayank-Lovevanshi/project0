@@ -20,7 +20,7 @@ public class Submission
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "LONGTEXT")
     private String sourceCode;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -19,7 +19,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
         this.outputParser = outputParser;
     }
     @Override
-    public String generateDriverCode(Structure structure, Language language) {
+    public StringBuilder generateDriverCode(Structure structure, Language language) {
         return switch (language) {
             case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(structure);
             case CPP -> boilerplateGeneratorService.generateCppDriverCode(structure);
@@ -27,7 +27,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
         };
     }
     @Override
-    public String generateStarterCode(Structure structure, Language language) {
+    public StringBuilder generateStarterCode(Structure structure, Language language) {
         return switch (language) {
             case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(structure);
             case CPP -> boilerplateGeneratorService.generateCppStarterCode(structure);
@@ -36,7 +36,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
     }
 
     @Override
-    public String generateInputUtilityCode(Language language) {
+    public StringBuilder generateInputUtilityCode(Language language) {
         return switch (language)
         {
             case JAVA -> inputParser.generateJavaInputUtilityCode();
@@ -46,7 +46,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
     }
 
     @Override
-    public String generateJavaOutputUtilityCode(Language language) {
+    public StringBuilder generateJavaOutputUtilityCode(Language language) {
         return switch (language)
         {
             case JAVA -> outputParser.generateJavaOutputUtilityCode();

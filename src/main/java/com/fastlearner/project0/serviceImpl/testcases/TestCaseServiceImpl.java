@@ -1,6 +1,8 @@
 package com.fastlearner.project0.serviceImpl.testcases;
 
+import com.fastlearner.project0.dto.testcases.CreateTestCaseBatchRequest;
 import com.fastlearner.project0.dto.testcases.CreateTestCaseRequest;
+import com.fastlearner.project0.dto.testcases.TestCaseBatchResponse;
 import com.fastlearner.project0.dto.testcases.TestCaseResponse;
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.TestCase;
@@ -65,5 +67,23 @@ public class TestCaseServiceImpl implements TestCaseService
         TestCase testCase = testCaseRepository.findById(testCaseId).orElseThrow(()->new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
         testCaseRepository.delete(testCase);
         return "DELETED";
+    }
+
+    @Override
+    public TestCaseBatchResponse createTestCaseBatch(Long problemId, CreateTestCaseBatchRequest testCaseBatchDTO) {
+        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        List<CreateTestCaseRequest> list= testCaseBatchDTO.getTestCases();
+        TestCase testCaseDB;
+        TestCase savedTestCaseDB;
+        TestCaseBatchResponse testCaseBatchResponse = new TestCaseBatchResponse();
+        List<TestCaseResponse> testCaseResponses = new ArrayList<>();
+        for(CreateTestCaseRequest testCase : list) {
+            testCaseDB = modelMapper.map(testCase, TestCase.class);
+            testCaseDB.setProblem(problem);
+            savedTestCaseDB =  testCaseRepository.save(testCaseDB);
+            testCaseResponses.add(modelMapper.map(savedTestCaseDB, TestCaseResponse.class));
+        }
+        testCaseBatchResponse.setTestCases(testCaseResponses);
+        return testCaseBatchResponse;
     }
 }

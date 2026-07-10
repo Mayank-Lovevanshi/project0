@@ -80,7 +80,7 @@ public class ProblemServiceImpl implements ProblemService {
         problemFromDB.setInputFormat(problemDTO.getInputFormat());
         problemFromDB.setOutputFormat(problemDTO.getOutputFormat());
         problemFromDB.setDifficulty(problemDTO.getDifficulty());
-        problemFromDB.setMemoryLimitMb(problemDTO.getMemoryLimitMs());
+        problemFromDB.setMemoryLimitKb(problemDTO.getMemoryLimitKb());
         problemFromDB.setTimeLimitMs(problemDTO.getTimeLimitMs());
         Problem savedProblem = problemRepository.save(problem);
         return modelMapper.map(savedProblem,ProblemResponse.class);

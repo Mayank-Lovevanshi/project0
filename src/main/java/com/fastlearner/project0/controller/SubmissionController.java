@@ -4,39 +4,39 @@ import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.service.submission.SubmissionService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api")
+@ResponseStatus(HttpStatus.OK)
+@RequiredArgsConstructor
 public class SubmissionController
 {
     private final SubmissionService submissionService;
-    public SubmissionController(SubmissionService submissionService)
-    {
-        this.submissionService = submissionService;
-    }
     @PostMapping("/submissions")
-    public ResponseEntity<SubmissionResponse> submit(@RequestBody @Valid CreateSubmissionRequest createSubmissionRequest)
+    public CompletableFuture<SubmissionResponse> submit(@RequestBody @Valid CreateSubmissionRequest createSubmissionRequest)
     {
-        return new ResponseEntity<>(submissionService.submit(createSubmissionRequest), HttpStatus.OK);
+        return submissionService.submit(createSubmissionRequest);
     }
     @GetMapping("/submissions/{id}")
-    public ResponseEntity<SubmissionResponse> getSubmission(@PathVariable Long id)
+    public SubmissionResponse getSubmission(@PathVariable Long id)
     {
-        return new ResponseEntity<>(submissionService.getSubmissionById(id),HttpStatus.OK);
+        return submissionService.getSubmissionById(id);
     }
     @GetMapping("/problems/{problemId}/submissions")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByProblemId(@PathVariable Long problemId)
+    public List<SubmissionResponse> getSubmissionsByProblemId(@PathVariable Long problemId)
     {
-        return new ResponseEntity<>(submissionService.getSubmissionsByProblemId(problemId),HttpStatus.OK);
+        return submissionService.getSubmissionsByProblemId(problemId);
     }
     @GetMapping("/submissions/my")
-    public ResponseEntity<List<SubmissionResponse>> getMySubmissions()
+    public List<SubmissionResponse> getMySubmissions()
     {
-        return new ResponseEntity<>(submissionService.getMySubmissions(),HttpStatus.OK);
+        return submissionService.getMySubmissions();
     }
 }

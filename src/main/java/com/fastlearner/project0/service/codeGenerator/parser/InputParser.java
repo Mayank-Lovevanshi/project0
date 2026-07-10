@@ -4,7 +4,7 @@ import com.fastlearner.project0.enums.Language;
 
 public interface InputParser
 {
-    public String generateJavaInputUtilityCode();
-    public String generateCppInputUtilityCode();
-    public String generatePythonInputUtilityCode();
+    public StringBuilder generateJavaInputUtilityCode();
+    public StringBuilder generateCppInputUtilityCode();
+    public StringBuilder generatePythonInputUtilityCode();
 }

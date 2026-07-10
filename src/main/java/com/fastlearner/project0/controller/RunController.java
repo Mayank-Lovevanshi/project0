@@ -2,29 +2,31 @@ package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.run.RunRequestDTO;
 import com.fastlearner.project0.dto.run.RunResponseDTO;
-import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
-import com.fastlearner.project0.dto.submission.SubmissionResponse;
-import com.fastlearner.project0.service.RunService;
+import com.fastlearner.project0.service.run.RunService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/run")
+@RequiredArgsConstructor
 public class RunController
 {
     private final RunService runService;
-    public RunController(RunService runService) {
-        this.runService = runService;
+    @PostMapping
+    @ResponseStatus(HttpStatus.OK)
+    public CompletableFuture<RunResponseDTO> run(@RequestBody @Valid RunRequestDTO runRequest)
+    {
+        return runService.run(runRequest);
     }
 
-    @PostMapping
-    public ResponseEntity<RunResponseDTO> run(@RequestBody @Valid RunRequestDTO runRequest)
-    {
-        return new ResponseEntity<>(runService.run(runRequest), HttpStatus.OK);
-    }
 }
+/*
+Flow of this Controller
+1. Controller
+2. Queue me daal do aur CompletableFuture return kar do
+3.
+ */
