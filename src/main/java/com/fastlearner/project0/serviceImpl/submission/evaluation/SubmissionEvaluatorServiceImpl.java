@@ -1,7 +1,4 @@
-package com.fastlearner.project0.serviceImpl.submission;
-
-
-import com.fastlearner.project0.dto.job.Job;
+package com.fastlearner.project0.serviceImpl.submission.evaluation;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
@@ -12,8 +9,7 @@ import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.SubmissionRepository;
-import com.fastlearner.project0.service.execution.registery.PendingExecutionRegistry;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
 import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -28,30 +24,7 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
 {
     private final TestcaseFactory testcaseFactory;
     private final SubmissionRepository submissionRepository;
-    private final PendingExecutionRegistry pendingExecutionRegistry;
     private final ModelMapper modelMapper;
-    private String normalize(String s)
-    {
-        return s
-                .replace("\r\n", "\n")
-                .replace("\r", "\n")
-                .trim();
-    }
-
-    private int getPassedTestCases(String expectedOutput,String actualOutput)
-    {
-        if(actualOutput==null) return 0;
-        String[] expectedOutputArray = expectedOutput.split("\n");
-        String[] actualOutputArray = actualOutput.split("\n");
-        int n = Math.min(expectedOutputArray.length,actualOutputArray.length);
-        int passedTestCases = 0;
-        for(int i=0;i<n;i++)
-        {
-            if(normalize(expectedOutputArray[i]).equals(normalize(actualOutputArray[i]))) passedTestCases++;
-            else break;
-        }
-        return passedTestCases;
-    }
 
     private Verdict mapVerdict(Judge0SubmissionResponse response)
     {

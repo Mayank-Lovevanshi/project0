@@ -1,4 +1,4 @@
-package com.fastlearner.project0.service.submission;
+package com.fastlearner.project0.service.submission.evaluation;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 

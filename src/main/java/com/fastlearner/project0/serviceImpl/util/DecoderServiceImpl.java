@@ -2,7 +2,6 @@ package com.fastlearner.project0.serviceImpl.util;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.service.util.DecoderService;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
