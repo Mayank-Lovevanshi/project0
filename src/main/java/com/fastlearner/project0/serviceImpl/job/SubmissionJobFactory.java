@@ -5,8 +5,8 @@ import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.enums.TestCaseType;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import com.fastlearner.project0.service.judge.JudgeService;
-import com.fastlearner.project0.serviceImpl.util.SourceCodeFactory;
 import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,19 +17,19 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class SubmissionJobFactory
 {
-    private final SourceCodeFactory sourceCodeFactory;
+    private final CodeGeneratorService codeGeneratorService;
     private final TestcaseFactory testcaseFactory;
     private final JudgeService judgeService;
     @Value("${judge.api.run.callbackUrl}")
-    private final String callbackUrl;
+    private String callbackUrl;
     public Job<SubmissionResponse> createJob(CreateSubmissionRequest request)
     {
-        String finalCode = sourceCodeFactory.getSourceCode(
+        StringBuilder driverCode = codeGeneratorService.generateDriverCode(
                 request.getProblemId(),
-                request.getLanguage(),
-                request.getSourceCode()
+                request.getLanguage()
         );
-        String stdin = testcaseFactory.buildTestcases(request.getProblemId(), TestCaseType.HIDDEN);
+        String finalCode = driverCode.append("\n").append(request.getSourceCode()).toString();
+        String stdin = testcaseFactory.buildTestcases(request.getProblemId(), TestCaseType.HIDDEN).getStdin();
         JudgeRequest judgeRequest = new JudgeRequest(finalCode,
                 judgeService.getJudgeLanguageId(request.getLanguage()),
                 stdin,

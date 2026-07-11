@@ -12,22 +12,19 @@ import com.fastlearner.project0.repository.ProblemRepository;
 import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.structure.StructureService;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class StructureServiceImpl implements StructureService
 {
     private final ModelMapper modelMapper;
     private final ProblemRepository problemRepository;
     private final StructureRepository structureRepository;
     private final CodeGeneratorService codeGeneratorService;
-    public StructureServiceImpl(ModelMapper modelMapper, ProblemRepository problemRepository, StructureRepository structureRepository, CodeGeneratorService codeGeneratorService) {
-        this.modelMapper = modelMapper;
-        this.problemRepository = problemRepository;
-        this.structureRepository = structureRepository;
-        this.codeGeneratorService = codeGeneratorService;
-    }
+
     @Override
     public StructureDTO saveProblemTemplate(StructureDTO structureDTO, Long problemId) {
         if(problemId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_ID_ProblemTemplateServiceImpl");
@@ -64,10 +61,8 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public AdminStructureResponse getProblemTemplate(Language language, Long problemId) {
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_ID_NOT_FOUND_ProblemTemplateImpl"));
-        Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_ProblemTemplateImpl"));
-        String driverCode = codeGeneratorService.generateDriverCode(structure,language);
-        String starterCode = codeGeneratorService.generateStarterCode(structure,language);
+        String driverCode = codeGeneratorService.generateDriverCode(problemId,language).toString();
+        String starterCode = codeGeneratorService.generateStarterCode(problemId,language).toString();
         AdminStructureResponse adminStructureResponse = new AdminStructureResponse();
         adminStructureResponse.setDriverCode(driverCode);
         adminStructureResponse.setStarterCode(starterCode);
@@ -76,12 +71,9 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public StudentStructureResponse getStarterCode(Long problemId,Language language) {
-        if(problemId<=0) throw new InvalidArgumentException("PROBLEM_ID_ProblemTemplateServiceImpl");
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND_ProblemTemplateImpl"));
-        Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("STRUCTURE_NOT_FOUND_ProblemTemplateImpl"));
-        String starterCode = codeGeneratorService.generateStarterCode(structure,language);
+        StringBuilder starterCode = codeGeneratorService.generateStarterCode(problemId,language);
         StudentStructureResponse studentStructureResponse = new StudentStructureResponse();
-        studentStructureResponse.setStarterCode(starterCode);
+        studentStructureResponse.setStarterCode(starterCode.toString());
         return studentStructureResponse;
     }
 }

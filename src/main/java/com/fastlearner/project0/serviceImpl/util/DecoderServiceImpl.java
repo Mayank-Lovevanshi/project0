@@ -9,11 +9,7 @@ import java.util.Base64;
 @Service
 public class DecoderServiceImpl implements DecoderService
 {
-    private final SubmissionEvaluatorService submissionEvaluatorService;
 
-    public DecoderServiceImpl(SubmissionEvaluatorService submissionEvaluatorService) {
-        this.submissionEvaluatorService = submissionEvaluatorService;
-    }
     private String decode(String value)
     {
         if(value == null) return null;
@@ -29,6 +25,5 @@ public class DecoderServiceImpl implements DecoderService
         response.setMessage(decode(response.getMessage()));
         System.out.println("RESPONSE : "+response);
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++");
-        submissionEvaluatorService.evaluateResponse(response);
     }
 }

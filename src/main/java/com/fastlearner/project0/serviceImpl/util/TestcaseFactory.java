@@ -1,5 +1,6 @@
 package com.fastlearner.project0.serviceImpl.util;
 
+import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
 import com.fastlearner.project0.entity.TestCase;
 import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.repository.TestCaseRepository;
@@ -11,7 +12,7 @@ import java.util.List;
 public class TestcaseFactory
 {
     private final TestCaseRepository testCaseRepository;
-    public String buildTestcases(Long problemId,TestCaseType testcaseType) {
+    public TestcaseFactoryResponse buildTestcases(Long problemId, TestCaseType testcaseType) {
         List<TestCase> testcases = testCaseRepository.findByProblemIdAndTestCaseType(problemId,testcaseType);
         StringBuilder input = new StringBuilder();
         for(TestCase testcase : testcases){
@@ -19,6 +20,6 @@ public class TestcaseFactory
                 input.append(testcase.getExpectedOutput()).append("\n");
             }
         }
-        return input.toString();
+        return new TestcaseFactoryResponse(input.toString(),testcases.size());
     }
 }

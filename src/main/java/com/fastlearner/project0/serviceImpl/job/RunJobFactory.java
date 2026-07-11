@@ -5,8 +5,8 @@ import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.dto.run.RunRequestDTO;
 import com.fastlearner.project0.dto.run.RunResponseDTO;
 import com.fastlearner.project0.enums.TestCaseType;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import com.fastlearner.project0.service.judge.JudgeService;
-import com.fastlearner.project0.serviceImpl.util.SourceCodeFactory;
 import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,19 +17,17 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class RunJobFactory
 {
-    private final SourceCodeFactory sourceCodeFactory;
+    private final CodeGeneratorService codeGeneratorService;
     private final TestcaseFactory testcaseFactory;
     private final JudgeService judgeService;
     @Value("${judge.api.run.callbackUrl}")
-    private final String callbackUrl;
+    private String callbackUrl;
+
     public Job<RunResponseDTO> createJob(RunRequestDTO runRequest)
     {
-        String finalCode = sourceCodeFactory.getSourceCode(
-                                                runRequest.getProblemId(),
-                                                runRequest.getLanguage(),
-                                                runRequest.getSourceCode()
-        );
-        String stdin = testcaseFactory.buildTestcases(runRequest.getProblemId(), TestCaseType.SAMPLE);
+        StringBuilder driverCode = codeGeneratorService.generateDriverCode(runRequest.getProblemId(), runRequest.getLanguage());
+        String finalCode = driverCode.append("\n").append(runRequest.getSourceCode()).toString();
+        String stdin = testcaseFactory.buildTestcases(runRequest.getProblemId(), TestCaseType.SAMPLE).getStdin();
         JudgeRequest judgeRequest = new JudgeRequest(finalCode,
                                         judgeService.getJudgeLanguageId(runRequest.getLanguage()),
                                         stdin,
