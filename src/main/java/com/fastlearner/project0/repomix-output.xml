@@ -2880,7 +2880,7 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.SubmissionRepository;
 import com.fastlearner.project0.repository.TestCaseRepository;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -3120,7 +3120,7 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
 import com.fastlearner.project0.service.submission.SubmissionProcessingService;
 import com.fastlearner.project0.service.submission.SubmissionService;
 import org.modelmapper.ModelMapper;

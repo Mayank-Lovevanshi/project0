@@ -1,10 +1,10 @@
 package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.run.evaluation.RunEvaluatorService;
+import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
 import com.fastlearner.project0.service.util.DecoderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +15,7 @@ public class JudgeController
 {
     private final DecoderService decoderService;
     private final SubmissionEvaluatorService submissionEvaluatorService;
+    private final RunEvaluatorService runEvaluatorService;
     @PutMapping("/submission")
     public void saveSubmission(@RequestBody Judge0SubmissionResponse body)
     {
@@ -25,6 +26,7 @@ public class JudgeController
     public void runResult(@RequestBody Judge0SubmissionResponse body)
     {
         decoderService.decode(body);
+        runEvaluatorService.evaluate(body);
     }
 
 }

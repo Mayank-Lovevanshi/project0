@@ -1,9 +1,8 @@
 package com.fastlearner.project0.serviceImpl.job;
 
-import com.fastlearner.project0.dto.job.Job;
+import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
-import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import com.fastlearner.project0.service.judge.JudgeService;
@@ -22,7 +21,7 @@ public class SubmissionJobFactory
     private final JudgeService judgeService;
     @Value("${judge.api.run.callbackUrl}")
     private String callbackUrl;
-    public Job<SubmissionResponse> createJob(CreateSubmissionRequest request)
+    public SubmissionJob createJob(CreateSubmissionRequest request,Long submissionId)
     {
         StringBuilder driverCode = codeGeneratorService.generateDriverCode(
                 request.getProblemId(),
@@ -34,7 +33,7 @@ public class SubmissionJobFactory
                 judgeService.getJudgeLanguageId(request.getLanguage()),
                 stdin,
                 callbackUrl);
-        return new Job<>(judgeRequest,new CompletableFuture<>());
+        return new SubmissionJob(judgeRequest, new CompletableFuture<>(),submissionId, request.getProblemId());
     }
 
 }

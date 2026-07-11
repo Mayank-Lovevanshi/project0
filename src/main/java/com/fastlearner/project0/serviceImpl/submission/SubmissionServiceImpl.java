@@ -1,5 +1,5 @@
 package com.fastlearner.project0.serviceImpl.submission;
-import com.fastlearner.project0.dto.job.Job;
+import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.entity.*;
@@ -8,22 +8,17 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
-import com.fastlearner.project0.service.execution.ExecutionService;
-import com.fastlearner.project0.service.execution.queue.ExecutionQueue;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
-import com.fastlearner.project0.service.submission.SubmissionProcessingService;
 import com.fastlearner.project0.service.submission.SubmissionService;
+import com.fastlearner.project0.service.submission.queue.SubmissionExecutionQueue;
 import com.fastlearner.project0.serviceImpl.job.SubmissionJobFactory;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,7 +30,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
     private final SubmissionJobFactory submissionJobFactory;
-    private final ExecutionQueue executionQueue;
+    private final SubmissionExecutionQueue executionQueue;
 
     private void markSubmissionBeforeJudge(Submission submission,User user,Problem problem,CreateSubmissionRequest request)
     {
@@ -61,8 +56,8 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         Submission submission = new Submission();
         markSubmissionBeforeJudge(submission,user,problem,request);
-        submissionRepository.save(submission);
-        Job<SubmissionResponse> job = submissionJobFactory.createJob(request);
+        Submission savedSubmission = submissionRepository.save(submission);
+        SubmissionJob job = submissionJobFactory.createJob(request,savedSubmission.getId());
         executionQueue.enqueue(job);
         return job.getFuture();
     }

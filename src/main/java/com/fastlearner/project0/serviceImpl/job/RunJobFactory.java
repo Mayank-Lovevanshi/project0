@@ -1,9 +1,8 @@
 package com.fastlearner.project0.serviceImpl.job;
 
-import com.fastlearner.project0.dto.job.Job;
+import com.fastlearner.project0.dto.job.RunJob;
 import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.dto.run.RunRequestDTO;
-import com.fastlearner.project0.dto.run.RunResponseDTO;
 import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import com.fastlearner.project0.service.judge.JudgeService;
@@ -23,7 +22,7 @@ public class RunJobFactory
     @Value("${judge.api.run.callbackUrl}")
     private String callbackUrl;
 
-    public Job<RunResponseDTO> createJob(RunRequestDTO runRequest)
+    public RunJob createJob(RunRequestDTO runRequest)
     {
         StringBuilder driverCode = codeGeneratorService.generateDriverCode(runRequest.getProblemId(), runRequest.getLanguage());
         String finalCode = driverCode.append("\n").append(runRequest.getSourceCode()).toString();
@@ -32,7 +31,7 @@ public class RunJobFactory
                                         judgeService.getJudgeLanguageId(runRequest.getLanguage()),
                                         stdin,
                                         callbackUrl);
-        return new Job<>(judgeRequest,new CompletableFuture<>());
+        return new RunJob(runRequest.getProblemId(), judgeRequest,new CompletableFuture<>());
     }
 
 }
