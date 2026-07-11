@@ -1,57 +1,29 @@
 package com.fastlearner.project0.serviceImpl.codeGenerator;
 
-import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.service.codeGenerator.BoilerplateGeneratorService;
-import com.fastlearner.project0.service.codeGenerator.parser.InputParser;
-import com.fastlearner.project0.service.codeGenerator.parser.OutputParser;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CodeGeneratorServiceImpl implements CodeGeneratorService {
-    private final InputParser inputParser;
-    private final OutputParser outputParser;
     private final BoilerplateGeneratorService boilerplateGeneratorService;
-    public CodeGeneratorServiceImpl(InputParser inputParser, OutputParser outputParser, BoilerplateGeneratorService boilerplateGeneratorService) {
-        this.boilerplateGeneratorService = boilerplateGeneratorService;
-        this.inputParser = inputParser;
-        this.outputParser = outputParser;
-    }
     @Override
-    public StringBuilder generateDriverCode(Structure structure, Language language) {
+    public StringBuilder generateDriverCode(Long problemId, Language language) {
         return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(structure);
-            case CPP -> boilerplateGeneratorService.generateCppDriverCode(structure);
-            case PYTHON -> boilerplateGeneratorService.generatePythonStarterCode(structure);
+            case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(problemId);
+            case CPP -> boilerplateGeneratorService.generateCppDriverCode(problemId);
+            case PYTHON -> boilerplateGeneratorService.generatePythonStarterCode(problemId);
         };
     }
     @Override
-    public StringBuilder generateStarterCode(Structure structure, Language language) {
+    public StringBuilder generateStarterCode(Long problemId, Language language) {
         return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(structure);
-            case CPP -> boilerplateGeneratorService.generateCppStarterCode(structure);
-            case PYTHON -> boilerplateGeneratorService.generatePythonDriverCode(structure);
-        };
-    }
-
-    @Override
-    public StringBuilder generateInputUtilityCode(Language language) {
-        return switch (language)
-        {
-            case JAVA -> inputParser.generateJavaInputUtilityCode();
-            case CPP -> inputParser.generateCppInputUtilityCode();
-            case PYTHON -> inputParser.generatePythonInputUtilityCode();
-        };
-    }
-
-    @Override
-    public StringBuilder generateJavaOutputUtilityCode(Language language) {
-        return switch (language)
-        {
-            case JAVA -> outputParser.generateJavaOutputUtilityCode();
-            case CPP -> outputParser.generateCppOutputUtilityCode();
-            case PYTHON -> outputParser.generatePythonOutputUtilityCode();
+            case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(problemId);
+            case CPP -> boilerplateGeneratorService.generateCppStarterCode(problemId);
+            case PYTHON -> boilerplateGeneratorService.generatePythonDriverCode(problemId);
         };
     }
 

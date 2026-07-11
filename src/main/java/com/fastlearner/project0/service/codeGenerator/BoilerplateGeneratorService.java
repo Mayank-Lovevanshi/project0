@@ -1,14 +1,11 @@
 package com.fastlearner.project0.service.codeGenerator;
 
-import com.fastlearner.project0.entity.Structure;
-import com.fastlearner.project0.enums.Language;
-
 public interface BoilerplateGeneratorService
 {
-    public StringBuilder generateJavaDriverCode(Structure structure);
-    public StringBuilder generateJavaStarterCode(Structure structure);
-    public StringBuilder generateCppStarterCode(Structure structure);
-    public StringBuilder generateCppDriverCode(Structure structure);
-    public StringBuilder generatePythonStarterCode(Structure structure);
-    public StringBuilder generatePythonDriverCode(Structure structure);
+    public StringBuilder generateJavaDriverCode(Long problemId);
+    public StringBuilder generateJavaStarterCode(Long problemId);
+    public StringBuilder generateCppStarterCode(Long problemId);
+    public StringBuilder generateCppDriverCode(Long problemId);
+    public StringBuilder generatePythonStarterCode(Long problemId);
+    public StringBuilder generatePythonDriverCode(Long problemId);
 }

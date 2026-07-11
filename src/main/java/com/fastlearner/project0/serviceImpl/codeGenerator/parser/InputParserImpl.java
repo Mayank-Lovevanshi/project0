@@ -6,15 +6,15 @@ import org.springframework.stereotype.Service;
 public class InputParserImpl implements InputParser
 {
 
-    public String generateCppInputUtilityCode() {
-        return "";
+    public StringBuilder generateCppInputUtilityCode() {
+        return new StringBuilder();
     }
-    public String generatePythonInputUtilityCode() {
-        return "";
+    public StringBuilder generatePythonInputUtilityCode() {
+        return new StringBuilder();
     }
-    public String generateJavaInputUtilityCode()
+    public StringBuilder generateJavaInputUtilityCode()
     {
-        return """
+        return new StringBuilder("""
                 class InputParser
                 {
                     public static int[] readIntArray(Scanner input)
@@ -112,7 +112,7 @@ public class InputParserImpl implements InputParser
                         return arr;
                     }
                 }
-                """;
+                """);
     }
 
 }

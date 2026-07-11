@@ -2,22 +2,28 @@ package com.fastlearner.project0.serviceImpl.codeGenerator;
 
 import com.fastlearner.project0.entity.Parameter;
 import com.fastlearner.project0.entity.Structure;
+import com.fastlearner.project0.exceptions.ResourceNotFoundException;
+import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.codeGenerator.BoilerplateGeneratorService;
 import com.fastlearner.project0.service.codeGenerator.DatatypeMappingService;
+import com.fastlearner.project0.service.codeGenerator.parser.InputParser;
+import com.fastlearner.project0.service.codeGenerator.parser.OutputParser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorService {
     private final DatatypeMappingService datatypeMapping;
+    private final StructureRepository structureRepository;
+    private final InputParser inputParser;
+    private final OutputParser outputParser;
 
-    public BoilerplateGeneratorServiceImpl(DatatypeMappingService datatypeMapping) {
-        this.datatypeMapping = datatypeMapping;
-    }
-
-    public StringBuilder generateCppStarterCode(Structure structure)
+    public StringBuilder generateCppStarterCode(Long problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
         code.append("public:\n");
@@ -37,8 +43,9 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         return code;
     }
 
-    public StringBuilder generateJavaStarterCode(Structure structure)
+    public StringBuilder generateJavaStarterCode(Long problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
         code.append("\t").append("public").append(" ").append(datatypeMapping.javaDatatypeMapping(structure.getReturnType())).append(" ").append(structure.getMethodName());
@@ -57,8 +64,9 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         return code;
     }
 
-    public StringBuilder generateJavaDriverCode(Structure structure)
+    public StringBuilder generateJavaDriverCode(Long  problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         int n = structure.getParameters().size();
         code.append("import java.util.*;\n");
@@ -84,22 +92,25 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         else code.append("Print.print(ans);\n");
         code.append("\t\t}\n");
         code.append("\t}\n");
-        code.append("}\n");
+        code.append("}\n\n");
+        code.append(inputParser.generateJavaInputUtilityCode());
+        code.append("\n\n");
+        code.append(outputParser.generateJavaOutputUtilityCode());
         return code;
     }
 
     @Override
-    public StringBuilder generateCppDriverCode(Structure structure) {
+    public StringBuilder generateCppDriverCode(Long problemId) {
         return new  StringBuilder();
     }
 
     @Override
-    public StringBuilder generatePythonStarterCode(Structure structure) {
+    public StringBuilder generatePythonStarterCode(Long problemId) {
         return new  StringBuilder();
     }
 
     @Override
-    public StringBuilder generatePythonDriverCode(Structure structure) {
+    public StringBuilder generatePythonDriverCode(Long problemId) {
         return new  StringBuilder();
     }
 }
