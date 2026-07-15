@@ -23,10 +23,6 @@ public class DatatypeMappingOrchestratorImpl implements DatatypeMappingOrchestra
         return getMapper(language).mapType(datatype);
     }
 
-    public Datatype parseToDatatype(String type, Language language) {
-        return getMapper(language).parseToDatatype(type);
-    }
-
     public String getInputCode(Datatype datatype, Language language) {
         return getMapper(language).getInputCode(datatype);
     }
