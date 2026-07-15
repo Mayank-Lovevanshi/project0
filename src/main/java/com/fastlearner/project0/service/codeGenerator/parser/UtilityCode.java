@@ -3,7 +3,7 @@ package com.fastlearner.project0.service.codeGenerator.parser;
 public interface UtilityCode
 {
      String generateInputUtilityCode();
-     String generateOutputUtilityCode();
-     String generateRuntimeOutputUtilityCode();
-     String generateRuntimeParameterUtilityCode();
+     String generateRuntimeDataUtilityCode();
+     String generateJsonResponseUtilityCode();
+     String generateEvaluationServiceUtilityCode();
 }
