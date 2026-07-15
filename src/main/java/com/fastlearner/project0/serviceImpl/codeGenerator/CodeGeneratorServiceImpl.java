@@ -1,30 +1,39 @@
 package com.fastlearner.project0.serviceImpl.codeGenerator;
 
+import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.enums.Language;
-import com.fastlearner.project0.service.codeGenerator.BoilerplateGeneratorService;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
-import lombok.RequiredArgsConstructor;
+import com.fastlearner.project0.service.codeGenerator.LanguageCodeGenerator;
+import com.fastlearner.project0.service.structure.StructureService;
 import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class CodeGeneratorServiceImpl implements CodeGeneratorService {
-    private final BoilerplateGeneratorService boilerplateGeneratorService;
-    @Override
-    public StringBuilder generateDriverCode(Long problemId, Language language) {
-        return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(problemId);
-            case CPP -> boilerplateGeneratorService.generateCppDriverCode(problemId);
-            case PYTHON -> boilerplateGeneratorService.generatePythonStarterCode(problemId);
-        };
-    }
-    @Override
-    public StringBuilder generateStarterCode(Long problemId, Language language) {
-        return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(problemId);
-            case CPP -> boilerplateGeneratorService.generateCppStarterCode(problemId);
-            case PYTHON -> boilerplateGeneratorService.generatePythonDriverCode(problemId);
-        };
-    }
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+@Service
+public class CodeGeneratorServiceImpl implements CodeGeneratorService {
+    private final StructureService structureService;
+    private final Map<Language, LanguageCodeGenerator> generatorMap;
+    public CodeGeneratorServiceImpl(StructureService structureService, List<LanguageCodeGenerator> generatorList) {
+        this.structureService = structureService;
+        this.generatorMap = generatorList.stream().collect(Collectors.toMap(LanguageCodeGenerator::getLanguage, generator -> generator));
+    }
+    @Override
+    public String generateDriverCode(Long problemId, Language language) {
+        Structure structure = structureService.getStructure(problemId);
+        return getGenerator(language).generateDriverCode(structure);
+    }
+    @Override
+    public String generateStarterCode(Long problemId, Language language) {
+        Structure structure = structureService.getStructure(problemId);
+        return getGenerator(language).generateStarterCode(structure);
+    }
+    private LanguageCodeGenerator getGenerator(Language language) {
+        LanguageCodeGenerator generator = generatorMap.get(language);
+        if(generator == null) {
+            throw new UnsupportedOperationException("LANGUAGE_CODE_GENERATOR_UNSUPPORTED");
+        }
+        return generator;
+    }
 }

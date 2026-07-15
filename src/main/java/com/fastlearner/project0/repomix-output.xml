@@ -57,15 +57,20 @@ dto/
     LoginDTO.java
     LoginResponseDTO.java
     RegisterDTO.java
+  error/
+    ErrorDetails.java
+  job/
+    RunJob.java
+    SubmissionJob.java
   judge/
     JudgeDTO.java
   judge0/
     batch/
       Judge0BatchSubmissionRequest.java
     Judge0Status.java
-    Judge0SubmissionRequest.java
     Judge0SubmissionResponse.java
     Judge0TokenResponse.java
+    JudgeRequest.java
   problem/
     CreateProblemRequest.java
     ProblemResponse.java
@@ -81,6 +86,8 @@ dto/
     CreateSubmissionRequest.java
     SubmissionResponse.java
   testcases/
+    factory/
+      TestcaseFactoryResponse.java
     CreateTestCaseBatchRequest.java
     CreateTestCaseRequest.java
     TestCaseBatchResponse.java
@@ -98,6 +105,7 @@ enums/
   ContestStatus.java
   Datatype.java
   Difficulty.java
+  ErrorType.java
   Language.java
   ProblemStatus.java
   Role.java
@@ -129,20 +137,36 @@ service/
     CodeGeneratorService.java
     DatatypeMappingService.java
   judge/
+    EvaluateJudgeResponse.java
     JudgeService.java
   problem/
     ProblemService.java
+  run/
+    evaluation/
+      RunEvaluatorService.java
+    execution/
+      RunExecutionService.java
+    queue/
+      RunExecutionQueue.java
+    registery/
+      PendingRunExecutionRegistry.java
+    RunService.java
   structure/
     StructureService.java
   submission/
-    SubmissionEvaluatorService.java
-    SubmissionProcessingService.java
+    evaluation/
+      SubmissionEvaluatorService.java
+    execution/
+      SubmissionExecutionService.java
+    queue/
+      SubmissionExecutionQueue.java
+    registery/
+      PendingSubmissionExecutionRegistry.java
     SubmissionService.java
   testcases/
     TestCaseService.java
   util/
     DecoderService.java
-  RunService.java
 serviceImpl/
   auth/
     AuthServiceImpl.java
@@ -153,26 +177,45 @@ serviceImpl/
     BoilerplateGeneratorServiceImpl.java
     CodeGeneratorServiceImpl.java
     DatatypeMappingServiceImpl.java
+  job/
+    RunJobFactory.java
+    SubmissionJobFactory.java
   judge/
-    Judge0ServiceImpl.java
+    EvaluateJudge0Response.java
+    Judge0Service.java
   problem/
     ProblemServiceImpl.java
+  run/
+    evaluation/
+      RunEvaluatorServiceImpl.java
+    execution/
+      RunExecutionServiceImpl.java
+    queue/
+      RunExecutionQueueImpl.java
+    registry/
+      PendingRunExecutionRegistryImpl.java
+    RunServiceImpl.java
   structure/
     StructureServiceImpl.java
   submission/
-    SubmissionEvaluatorServiceImpl.java
-    SubmissionProcessingServiceImpl.java
+    evaluation/
+      SubmissionEvaluatorServiceImpl.java
+    execution/
+      SubmissionExecutionServiceImpl.java
+    queue/
+      SubmissionExecutionQueueImpl.java
+    registry/
+      PendingSubmissionExecutionRegistryImpl.java
     SubmissionServiceImpl.java
   testcases/
     TestCaseServiceImpl.java
   util/
     CustomUserDetailsService.java
     DecoderServiceImpl.java
-  RunServiceImpl.java
+    TestcaseFactory.java
 utils/
   InputParser.class
   utils.jar
-data.zip
 entity.zip
 Project0Application.java
 </directory_structure>
@@ -183,26 +226,13 @@ This section contains the contents of the repository's files.
 <file path="config/AsyncConfig.java">
 package com.fastlearner.project0.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
 public class AsyncConfig {
 
-    @Bean(name = "judgeTaskExecutor")
-    public TaskExecutor judgeTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);       // Keeps 10 threads always ready
-        executor.setMaxPoolSize(25);        // Scales up to 25 threads under high load
-        executor.setQueueCapacity(100);     // Holds up to 100 pending batch jobs
-        executor.setThreadNamePrefix("JudgeTask-");
-        executor.initialize();
-        return executor;
-    }
 }
 </file>
 
@@ -375,51 +405,35 @@ public class AuthController {
 <file path="controller/JudgeController.java">
 package com.fastlearner.project0.controller;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+import com.fastlearner.project0.service.run.evaluation.RunEvaluatorService;
+import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
 import com.fastlearner.project0.service.util.DecoderService;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/judge0")
+@RequestMapping("/api/judge")
+@ResponseStatus(HttpStatus.OK)
+@RequiredArgsConstructor
 public class JudgeController
 {
     private final DecoderService decoderService;
-    public JudgeController(DecoderService decoderService) {
-        this.decoderService = decoderService;
-    }
-
-    /*
-    public class Judge0SubmissionResponse
-    {
-        private String stdout;
-        private String stderr;
-        private String compile_output;
-        private Double time;
-        private Long memory;
-        private Judge0Status status;
-    }
-     */
-/*
-    public class JudgeResult
-    {
-        private String output;
-        private String executionTimeMs;
-        private Integer memoryUsedKb;
-        private Verdict verdict;
-        private String errorMessage;
-    }
- */
-    @PutMapping("/result")
-    public ResponseEntity<Void> saveResult(@RequestBody Judge0SubmissionResponse body)
+    private final SubmissionEvaluatorService submissionEvaluatorService;
+    private final RunEvaluatorService runEvaluatorService;
+    @PutMapping("/submission")
+    public void saveSubmission(@RequestBody Judge0SubmissionResponse body)
     {
         decoderService.decode(body);
-        return ResponseEntity.ok().build();
+        submissionEvaluatorService.evaluateResponse(body);
     }
-    @PutMapping
-    public void test()
+    @PutMapping("/run")
+    public void runResult(@RequestBody Judge0SubmissionResponse body)
     {
-        System.out.println("CAME!!!");
+        decoderService.decode(body);
+        runEvaluatorService.evaluate(body);
     }
+
 }
 </file>
 
@@ -484,32 +498,34 @@ package com.fastlearner.project0.controller;
 
 import com.fastlearner.project0.dto.run.RunRequestDTO;
 import com.fastlearner.project0.dto.run.RunResponseDTO;
-import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
-import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.service.run.RunService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/run")
+@RequiredArgsConstructor
 public class RunController
 {
     private final RunService runService;
-    public RunController(RunService runService) {
-        this.runService = runService;
+    @PostMapping
+    @ResponseStatus(HttpStatus.OK)
+    public CompletableFuture<RunResponseDTO> run(@RequestBody @Valid RunRequestDTO runRequest)
+    {
+        return runService.run(runRequest);
     }
 
-    @PostMapping
-    public ResponseEntity<RunResponseDTO> run(@RequestBody @Valid RunRequestDTO runRequest)
-    {
-        return new ResponseEntity<>(runService.run(runRequest), HttpStatus.OK);
-    }
 }
+/*
+Flow of this Controller
+1. Controller
+2. Queue me daal do aur CompletableFuture return kar do
+3.
+ */
 </file>
 
 <file path="controller/StructureController.java">
@@ -576,40 +592,40 @@ import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.service.submission.SubmissionService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api")
+@ResponseStatus(HttpStatus.OK)
+@RequiredArgsConstructor
 public class SubmissionController
 {
     private final SubmissionService submissionService;
-    public SubmissionController(SubmissionService submissionService)
-    {
-        this.submissionService = submissionService;
-    }
     @PostMapping("/submissions")
-    public ResponseEntity<SubmissionResponse> submit(@RequestBody @Valid CreateSubmissionRequest createSubmissionRequest)
+    public CompletableFuture<SubmissionResponse> submit(@RequestBody @Valid CreateSubmissionRequest createSubmissionRequest)
     {
-        return new ResponseEntity<>(submissionService.submit(createSubmissionRequest), HttpStatus.OK);
+        return submissionService.submit(createSubmissionRequest);
     }
     @GetMapping("/submissions/{id}")
-    public ResponseEntity<SubmissionResponse> getSubmission(@PathVariable Long id)
+    public SubmissionResponse getSubmission(@PathVariable Long id)
     {
-        return new ResponseEntity<>(submissionService.getSubmissionById(id),HttpStatus.OK);
+        return submissionService.getSubmissionById(id);
     }
     @GetMapping("/problems/{problemId}/submissions")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByProblemId(@PathVariable Long problemId)
+    public List<SubmissionResponse> getSubmissionsByProblemId(@PathVariable Long problemId)
     {
-        return new ResponseEntity<>(submissionService.getSubmissionsByProblemId(problemId),HttpStatus.OK);
+        return submissionService.getSubmissionsByProblemId(problemId);
     }
     @GetMapping("/submissions/my")
-    public ResponseEntity<List<SubmissionResponse>> getMySubmissions()
+    public List<SubmissionResponse> getMySubmissions()
     {
-        return new ResponseEntity<>(submissionService.getMySubmissions(),HttpStatus.OK);
+        return submissionService.getMySubmissions();
     }
 }
 </file>
@@ -712,6 +728,64 @@ public class RegisterDTO
 }
 </file>
 
+<file path="dto/error/ErrorDetails.java">
+package com.fastlearner.project0.dto.error;
+
+
+import com.fastlearner.project0.enums.ErrorType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ErrorDetails
+{
+    private ErrorType errorType;
+    private String message;
+}
+</file>
+
+<file path="dto/job/RunJob.java">
+package com.fastlearner.project0.dto.job;
+
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
+import com.fastlearner.project0.dto.run.RunResponseDTO;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.concurrent.CompletableFuture;
+@AllArgsConstructor
+@Data
+public class RunJob
+{
+    private Long problemId;
+    private JudgeRequest judgeRequest;
+    private CompletableFuture<RunResponseDTO> future;
+}
+</file>
+
+<file path="dto/job/SubmissionJob.java">
+package com.fastlearner.project0.dto.job;
+
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
+import com.fastlearner.project0.dto.submission.SubmissionResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.concurrent.CompletableFuture;
+@Data
+@AllArgsConstructor
+public class SubmissionJob
+{
+    private JudgeRequest judgeRequest;
+    private CompletableFuture<SubmissionResponse> future;
+    private Long submissionId;
+    private Long problemId;
+}
+</file>
+
 <file path="dto/judge/JudgeDTO.java">
 package com.fastlearner.project0.dto.judge;
 
@@ -735,9 +809,7 @@ public class JudgeDTO
 package com.fastlearner.project0.dto.judge0.batch;
 
 import com.fastlearner.project0.dto.judge0.JudgeRequest;
-import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -747,7 +819,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Judge0BatchSubmissionRequest
 {
-    private List<Judge0SubmissionRequest> submissions;
+    private List<JudgeRequest> submissions;
 }
 </file>
 
@@ -765,28 +837,6 @@ public class Judge0Status
 {
     private Integer id;
     private String description;
-}
-</file>
-
-<file path="dto/judge0/Judge0SubmissionRequest.java">
-package com.fastlearner.project0.dto.judge0;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Judge0SubmissionRequest {
-    @JsonProperty("source_code")
-    private String sourceCode;
-    @JsonProperty("language_id")
-    private Integer languageId;
-    private String stdin;
-    @JsonProperty("callback_url")
-    private String callbackUrl;
 }
 </file>
 
@@ -831,6 +881,28 @@ public class Judge0TokenResponse
 }
 </file>
 
+<file path="dto/judge0/JudgeRequest.java">
+package com.fastlearner.project0.dto.judge0;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class JudgeRequest {
+    @JsonProperty("source_code")
+    private String sourceCode;
+    @JsonProperty("language_id")
+    private Integer languageId;
+    private String stdin;
+    @JsonProperty("callback_url")
+    private String callbackUrl;
+}
+</file>
+
 <file path="dto/problem/CreateProblemRequest.java">
 package com.fastlearner.project0.dto.problem;
 
@@ -851,7 +923,7 @@ public class CreateProblemRequest
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
 }
 </file>
 
@@ -881,7 +953,7 @@ public class ProblemResponse
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
     private ProblemStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -910,7 +982,7 @@ public class UpdateProblemRequest
     private String constraints;
     private Difficulty difficulty;
     private Integer timeLimitMs;
-    private Integer memoryLimitMs;
+    private Integer memoryLimitKb;
     private ProblemStatus status;
 }
 </file>
@@ -918,15 +990,45 @@ public class UpdateProblemRequest
 <file path="dto/run/RunRequestDTO.java">
 package com.fastlearner.project0.dto.run;
 
-public class RunRequestDTO {
+import com.fastlearner.project0.enums.Language;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class RunRequestDTO
+{
+    private Long problemId;
+    private Language language;
+    private String sourceCode;
 }
 </file>
 
 <file path="dto/run/RunResponseDTO.java">
 package com.fastlearner.project0.dto.run;
 
+import com.fastlearner.project0.dto.error.ErrorDetails;
+import com.fastlearner.project0.enums.Verdict;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RunResponseDTO
 {
+    private Verdict verdict;
+    private String output;
+    private String expectedOutput;
+    private String input;
+    private Double executionTimeMs;
+    private Integer memoryUsedKb;
+    private ErrorDetails errorDetails;
 }
 </file>
 
@@ -1054,6 +1156,21 @@ Submission
 -x LocalDateTime startedAt
 -x LocalDateTime completedAt
  */
+</file>
+
+<file path="dto/testcases/factory/TestcaseFactoryResponse.java">
+package com.fastlearner.project0.dto.testcases.factory;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@AllArgsConstructor
+@Data
+public class TestcaseFactoryResponse
+{
+    private String stdin;
+    private Integer numberOfTestCases;
+}
 </file>
 
 <file path="dto/testcases/CreateTestCaseBatchRequest.java">
@@ -1241,7 +1358,7 @@ public class Problem
     @Column(nullable = false)
     private Integer timeLimitMs;
     @Column(nullable = false)
-    private Integer memoryLimitMb;
+    private Integer memoryLimitKb;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProblemStatus status;
@@ -1317,7 +1434,7 @@ public class Submission
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "LONGTEXT")
     private String sourceCode;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -1509,6 +1626,17 @@ public enum Difficulty
 }
 </file>
 
+<file path="enums/ErrorType.java">
+package com.fastlearner.project0.enums;
+
+public enum ErrorType
+{
+    COMPILATION_ERROR,
+    RUNTIME_ERROR,
+    INTERNAL_ERROR
+}
+</file>
+
 <file path="enums/Language.java">
 package com.fastlearner.project0.enums;
 
@@ -1655,12 +1783,14 @@ package com.fastlearner.project0.repository;
 
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.Structure;
+import com.fastlearner.project0.entity.TestCase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface StructureRepository extends JpaRepository<Structure, Long>
 {
     public Optional<Structure> findByProblem(Problem problem);
+    public Optional<Structure> findByProblemId(Long problemId);
 }
 </file>
 
@@ -1668,6 +1798,7 @@ public interface StructureRepository extends JpaRepository<Structure, Long>
 package com.fastlearner.project0.repository;
 
 import com.fastlearner.project0.entity.Submission;
+import com.fastlearner.project0.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -1683,13 +1814,18 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long>
     List<Submission> findByIds(@Param("ids") List<Long> ids);
     @Query(nativeQuery = true,value = "Select * from submission where token=(:token)")
     Optional<Submission> findByToken(@Param("token")String token);
+    List<Submission> findByProblemId(Long problemId);
+    List<Submission> findByUserEmail(String email);
 }
 </file>
 
 <file path="repository/TestCaseRepository.java">
 package com.fastlearner.project0.repository;
 import com.fastlearner.project0.entity.TestCase;
+import com.fastlearner.project0.enums.TestCaseType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -1697,6 +1833,7 @@ import java.util.Optional;
 public interface TestCaseRepository extends JpaRepository<TestCase,Long>
 {
     Optional<List<TestCase>> findByProblemId(Long problemId);
+    List<TestCase> findByProblemIdAndTestCaseType(Long problemId, TestCaseType testCaseType);
 }
 </file>
 
@@ -1815,9 +1952,9 @@ import com.fastlearner.project0.enums.Language;
 
 public interface InputParser
 {
-    public String generateJavaInputUtilityCode();
-    public String generateCppInputUtilityCode();
-    public String generatePythonInputUtilityCode();
+    public StringBuilder generateJavaInputUtilityCode();
+    public StringBuilder generateCppInputUtilityCode();
+    public StringBuilder generatePythonInputUtilityCode();
 }
 </file>
 
@@ -1826,41 +1963,35 @@ package com.fastlearner.project0.service.codeGenerator.parser;
 
 public interface OutputParser
 {
-   public String generateJavaOutputUtilityCode();
-   public String generateCppOutputUtilityCode();
-   public String generatePythonOutputUtilityCode();
+   public StringBuilder generateJavaOutputUtilityCode();
+   public StringBuilder generateCppOutputUtilityCode();
+   public StringBuilder generatePythonOutputUtilityCode();
 }
 </file>
 
 <file path="service/codeGenerator/BoilerplateGeneratorService.java">
 package com.fastlearner.project0.service.codeGenerator;
 
-import com.fastlearner.project0.entity.Structure;
-import com.fastlearner.project0.enums.Language;
-
 public interface BoilerplateGeneratorService
 {
-    public String generateJavaDriverCode(Structure structure);
-    public String generateJavaStarterCode(Structure structure);
-    public String generateCppStarterCode(Structure structure);
-    public String generateCppDriverCode(Structure structure);
-    public String generatePythonStarterCode(Structure structure);
-    public String generatePythonDriverCode(Structure structure);
+    public StringBuilder generateJavaDriverCode(Long problemId);
+    public StringBuilder generateJavaStarterCode(Long problemId);
+    public StringBuilder generateCppStarterCode(Long problemId);
+    public StringBuilder generateCppDriverCode(Long problemId);
+    public StringBuilder generatePythonStarterCode(Long problemId);
+    public StringBuilder generatePythonDriverCode(Long problemId);
 }
 </file>
 
 <file path="service/codeGenerator/CodeGeneratorService.java">
 package com.fastlearner.project0.service.codeGenerator;
 
-import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.enums.Language;
 
 public interface CodeGeneratorService
 {
-    public String generateDriverCode(Structure structure, Language language);
-    public String generateStarterCode(Structure structure, Language language);
-    public String generateInputUtilityCode(Language language);
-    public String generateJavaOutputUtilityCode(Language language);
+    public StringBuilder generateDriverCode(Long problemId, Language language);
+    public StringBuilder generateStarterCode(Long problemId, Language language);
 }
 </file>
 
@@ -1877,19 +2008,27 @@ public interface DatatypeMappingService
 }
 </file>
 
-<file path="service/judge/JudgeService.java">
+<file path="service/judge/EvaluateJudgeResponse.java">
 package com.fastlearner.project0.service.judge;
 
-import com.fastlearner.project0.dto.judge.JudgeDTO;
+public interface EvaluateJudgeResponse
+{
+    public int getPassedTestCases(String expectedOutput,String actualOutput);
+}
+</file>
+
+<file path="service/judge/JudgeService.java">
+package com.fastlearner.project0.service.judge;
 import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.enums.Language;
 
 import java.util.List;
 
 public interface JudgeService
 {
-    public Integer getJudge0LanguageId(Language language);
-    public Judge0TokenResponse[] executeBatch(List<JudgeDTO> submissionsToJudge);
+    public Integer getJudgeLanguageId(Language language);
+    public Judge0TokenResponse[] execute(List<JudgeRequest> requests);
 }
 </file>
 
@@ -1912,6 +2051,65 @@ public interface ProblemService
 }
 </file>
 
+<file path="service/run/evaluation/RunEvaluatorService.java">
+package com.fastlearner.project0.service.run.evaluation;
+
+import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+
+public interface RunEvaluatorService
+{
+    public void evaluate(Judge0SubmissionResponse body);
+}
+</file>
+
+<file path="service/run/execution/RunExecutionService.java">
+package com.fastlearner.project0.service.run.execution;
+
+public interface RunExecutionService
+{
+    public void execute() throws InterruptedException;
+}
+</file>
+
+<file path="service/run/queue/RunExecutionQueue.java">
+package com.fastlearner.project0.service.run.queue;
+
+import com.fastlearner.project0.dto.job.RunJob;
+
+public interface RunExecutionQueue
+{
+    public void enqueue(RunJob job);
+    public RunJob take() throws InterruptedException;
+    public boolean isEmpty();
+}
+</file>
+
+<file path="service/run/registery/PendingRunExecutionRegistry.java">
+package com.fastlearner.project0.service.run.registery;
+import com.fastlearner.project0.dto.job.RunJob;
+
+public interface PendingRunExecutionRegistry
+{
+    public void put(String token, RunJob job);
+    public RunJob get(String token);
+    public void remove(String token);
+}
+</file>
+
+<file path="service/run/RunService.java">
+package com.fastlearner.project0.service.run;
+
+import com.fastlearner.project0.dto.run.RunRequestDTO;
+import com.fastlearner.project0.dto.run.RunResponseDTO;
+
+import java.util.concurrent.CompletableFuture;
+
+public interface RunService
+{
+    public CompletableFuture<RunResponseDTO> run(RunRequestDTO runRequest);
+}
+</file>
+
 <file path="service/structure/StructureService.java">
 package com.fastlearner.project0.service.structure;
 
@@ -1930,8 +2128,8 @@ public interface StructureService
 }
 </file>
 
-<file path="service/submission/SubmissionEvaluatorService.java">
-package com.fastlearner.project0.service.submission;
+<file path="service/submission/evaluation/SubmissionEvaluatorService.java">
+package com.fastlearner.project0.service.submission.evaluation;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 
@@ -1941,14 +2139,37 @@ public interface SubmissionEvaluatorService
 }
 </file>
 
-<file path="service/submission/SubmissionProcessingService.java">
-package com.fastlearner.project0.service.submission;
+<file path="service/submission/execution/SubmissionExecutionService.java">
+package com.fastlearner.project0.service.submission.execution;
 
-import java.util.List;
-
-public interface SubmissionProcessingService
+public interface SubmissionExecutionService
 {
-    public void processBatchSubmissions(List<Long>  submissionIds);
+    public void execute() throws InterruptedException;
+}
+</file>
+
+<file path="service/submission/queue/SubmissionExecutionQueue.java">
+package com.fastlearner.project0.service.submission.queue;
+
+import com.fastlearner.project0.dto.job.SubmissionJob;
+
+public interface SubmissionExecutionQueue
+{
+    public void enqueue(SubmissionJob job);
+    public SubmissionJob take() throws InterruptedException;
+    public boolean isEmpty();
+}
+</file>
+
+<file path="service/submission/registery/PendingSubmissionExecutionRegistry.java">
+package com.fastlearner.project0.service.submission.registery;
+import com.fastlearner.project0.dto.job.SubmissionJob;
+
+public interface PendingSubmissionExecutionRegistry
+{
+    public void put(String token, SubmissionJob job);
+    public SubmissionJob get(String token);
+    public void remove(String token);
 }
 </file>
 
@@ -1959,10 +2180,11 @@ import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface SubmissionService
 {
-    public SubmissionResponse submit(CreateSubmissionRequest createSubmissionRequest);
+    public CompletableFuture<SubmissionResponse> submit(CreateSubmissionRequest createSubmissionRequest);
     public SubmissionResponse getSubmissionById(Long id);
     public List<SubmissionResponse> getSubmissionsByProblemId(Long problemId);
     public List<SubmissionResponse> getMySubmissions();
@@ -2000,19 +2222,6 @@ import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 public interface DecoderService
 {
     public void decode(Judge0SubmissionResponse judge0SubmissionResponse);
-}
-</file>
-
-<file path="service/RunService.java">
-package com.fastlearner.project0.service;
-
-import com.fastlearner.project0.dto.run.RunRequestDTO;
-import com.fastlearner.project0.dto.run.RunResponseDTO;
-import jakarta.validation.Valid;
-
-public interface RunService
-{
-    public RunResponseDTO run(RunRequestDTO runRequest);
 }
 </file>
 
@@ -2085,22 +2294,22 @@ public class AuthServiceImpl implements AuthService {
 
 <file path="serviceImpl/codeGenerator/parser/InputParserImpl.java">
 package com.fastlearner.project0.serviceImpl.codeGenerator.parser;
-import com.fastlearner.project0.service.codeGenerator.parser.InputParser;
+import com.fastlearner.project0.service.codeGenerator.parser.UtilityCode;
 import org.springframework.stereotype.Service;
 
 @Service
 public class InputParserImpl implements InputParser
 {
 
-    public String generateCppInputUtilityCode() {
-        return "";
+    public StringBuilder generateCppInputUtilityCode() {
+        return new StringBuilder();
     }
-    public String generatePythonInputUtilityCode() {
-        return "";
+    public StringBuilder generatePythonInputUtilityCode() {
+        return new StringBuilder();
     }
-    public String generateJavaInputUtilityCode()
+    public StringBuilder generateJavaInputUtilityCode()
     {
-        return """
+        return new StringBuilder("""
                 class InputParser
                 {
                     public static int[] readIntArray(Scanner input)
@@ -2198,7 +2407,7 @@ public class InputParserImpl implements InputParser
                         return arr;
                     }
                 }
-                """;
+                """);
     }
 
 }
@@ -2214,8 +2423,9 @@ import org.springframework.stereotype.Service;
 public class OutputParserImpl implements OutputParser
 {
     @Override
-    public String generateJavaOutputUtilityCode() {
-        return """
+    public StringBuilder generateJavaOutputUtilityCode() {
+        StringBuilder sb =  new  StringBuilder();
+                sb.append("""
                 class Print {
                \s
                         public static void print(int[] arr) {
@@ -2318,17 +2528,18 @@ public class OutputParserImpl implements OutputParser
                             }
                         }
                     }
-               \s""";
+               \s""");
+                return sb;
     }
 
     @Override
-    public String generateCppOutputUtilityCode() {
-        return "";
+    public StringBuilder generateCppOutputUtilityCode() {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonOutputUtilityCode() {
-        return "";
+    public StringBuilder generatePythonOutputUtilityCode() {
+        return new  StringBuilder();
     }
 }
 </file>
@@ -2338,22 +2549,28 @@ package com.fastlearner.project0.serviceImpl.codeGenerator;
 
 import com.fastlearner.project0.entity.Parameter;
 import com.fastlearner.project0.entity.Structure;
+import com.fastlearner.project0.exceptions.ResourceNotFoundException;
+import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.codeGenerator.BoilerplateGeneratorService;
-import com.fastlearner.project0.service.codeGenerator.DatatypeMappingService;
+import com.fastlearner.project0.service.codeGenerator.DatatypeMapping;
+import com.fastlearner.project0.service.codeGenerator.parser.UtilityCode;
+import com.fastlearner.project0.service.codeGenerator.parser.OutputParser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorService {
     private final DatatypeMappingService datatypeMapping;
+    private final StructureRepository structureRepository;
+    private final InputParser inputParser;
+    private final OutputParser outputParser;
 
-    public BoilerplateGeneratorServiceImpl(DatatypeMappingService datatypeMapping) {
-        this.datatypeMapping = datatypeMapping;
-    }
-
-    public String generateCppStarterCode(Structure structure)
+    public StringBuilder generateCppStarterCode(Long problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
         code.append("public:\n");
@@ -2370,11 +2587,12 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         code.append("\n");
         code.append("\t}");
         code.append("\n};");
-        return code.toString();
+        return code;
     }
 
-    public String generateJavaStarterCode(Structure structure)
+    public StringBuilder generateJavaStarterCode(Long problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         code.append("class Solution {\n");
         code.append("\t").append("public").append(" ").append(datatypeMapping.javaDatatypeMapping(structure.getReturnType())).append(" ").append(structure.getMethodName());
@@ -2390,11 +2608,12 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         code.append("\n");
         code.append("\t}");
         code.append("\n}");
-        return code.toString();
+        return code;
     }
 
-    public String generateJavaDriverCode(Structure structure)
+    public StringBuilder generateJavaDriverCode(Long  problemId)
     {
+        Structure structure = structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_BoilerplateGeneratorServiceImpl"));
         StringBuilder code = new StringBuilder();
         int n = structure.getParameters().size();
         code.append("import java.util.*;\n");
@@ -2420,23 +2639,26 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
         else code.append("Print.print(ans);\n");
         code.append("\t\t}\n");
         code.append("\t}\n");
-        code.append("}\n");
-        return code.toString();
+        code.append("}\n\n");
+        code.append(inputParser.generateJavaInputUtilityCode());
+        code.append("\n\n");
+        code.append(outputParser.generateJavaOutputUtilityCode());
+        return code;
     }
 
     @Override
-    public String generateCppDriverCode(Structure structure) {
-        return "";
+    public StringBuilder generateCppDriverCode(Long problemId) {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonStarterCode(Structure structure) {
-        return "";
+    public StringBuilder generatePythonStarterCode(Long problemId) {
+        return new  StringBuilder();
     }
 
     @Override
-    public String generatePythonDriverCode(Structure structure) {
-        return "";
+    public StringBuilder generatePythonDriverCode(Long problemId) {
+        return new  StringBuilder();
     }
 }
 </file>
@@ -2444,58 +2666,30 @@ public class BoilerplateGeneratorServiceImpl implements BoilerplateGeneratorServ
 <file path="serviceImpl/codeGenerator/CodeGeneratorServiceImpl.java">
 package com.fastlearner.project0.serviceImpl.codeGenerator;
 
-import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.service.codeGenerator.BoilerplateGeneratorService;
-import com.fastlearner.project0.service.codeGenerator.parser.InputParser;
-import com.fastlearner.project0.service.codeGenerator.parser.OutputParser;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CodeGeneratorServiceImpl implements CodeGeneratorService {
-    private final InputParser inputParser;
-    private final OutputParser outputParser;
     private final BoilerplateGeneratorService boilerplateGeneratorService;
-    public CodeGeneratorServiceImpl(InputParser inputParser, OutputParser outputParser, BoilerplateGeneratorService boilerplateGeneratorService) {
-        this.boilerplateGeneratorService = boilerplateGeneratorService;
-        this.inputParser = inputParser;
-        this.outputParser = outputParser;
-    }
     @Override
-    public String generateDriverCode(Structure structure, Language language) {
+    public StringBuilder generateDriverCode(Long problemId, Language language) {
         return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(structure);
-            case CPP -> boilerplateGeneratorService.generateCppDriverCode(structure);
-            case PYTHON -> boilerplateGeneratorService.generatePythonStarterCode(structure);
+            case JAVA -> boilerplateGeneratorService.generateJavaDriverCode(problemId);
+            case CPP -> boilerplateGeneratorService.generateCppDriverCode(problemId);
+            case PYTHON -> boilerplateGeneratorService.generatePythonStarterCode(problemId);
         };
     }
     @Override
-    public String generateStarterCode(Structure structure, Language language) {
+    public StringBuilder generateStarterCode(Long problemId, Language language) {
         return switch (language) {
-            case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(structure);
-            case CPP -> boilerplateGeneratorService.generateCppStarterCode(structure);
-            case PYTHON -> boilerplateGeneratorService.generatePythonDriverCode(structure);
-        };
-    }
-
-    @Override
-    public String generateInputUtilityCode(Language language) {
-        return switch (language)
-        {
-            case JAVA -> inputParser.generateJavaInputUtilityCode();
-            case CPP -> inputParser.generateCppInputUtilityCode();
-            case PYTHON -> inputParser.generatePythonInputUtilityCode();
-        };
-    }
-
-    @Override
-    public String generateJavaOutputUtilityCode(Language language) {
-        return switch (language)
-        {
-            case JAVA -> outputParser.generateJavaOutputUtilityCode();
-            case CPP -> outputParser.generateCppOutputUtilityCode();
-            case PYTHON -> outputParser.generatePythonOutputUtilityCode();
+            case JAVA -> boilerplateGeneratorService.generateJavaStarterCode(problemId);
+            case CPP -> boilerplateGeneratorService.generateCppStarterCode(problemId);
+            case PYTHON -> boilerplateGeneratorService.generatePythonDriverCode(problemId);
         };
     }
 
@@ -2506,7 +2700,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
 package com.fastlearner.project0.serviceImpl.codeGenerator;
 import com.fastlearner.project0.enums.Datatype;
 import com.fastlearner.project0.exceptions.DatatypeNotSupportedException;
-import com.fastlearner.project0.service.codeGenerator.DatatypeMappingService;
+import com.fastlearner.project0.service.codeGenerator.DatatypeMapping;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -2588,73 +2782,161 @@ public class DatatypeMappingServiceImpl implements DatatypeMappingService
 }
 </file>
 
-<file path="serviceImpl/judge/Judge0ServiceImpl.java">
+<file path="serviceImpl/job/RunJobFactory.java">
+package com.fastlearner.project0.serviceImpl.job;
+
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
+import com.fastlearner.project0.dto.run.RunRequestDTO;
+import com.fastlearner.project0.enums.TestCaseType;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import com.fastlearner.project0.service.judge.JudgeService;
+import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
+@Component
+@RequiredArgsConstructor
+public class RunJobFactory
+{
+    private final CodeGeneratorService codeGeneratorService;
+    private final TestcaseFactory testcaseFactory;
+    private final JudgeService judgeService;
+    @Value("${judge.api.run.callbackUrl}")
+    private String callbackUrl;
+
+    public RunJob createJob(RunRequestDTO runRequest)
+    {
+        StringBuilder driverCode = codeGeneratorService.generateDriverCode(runRequest.getProblemId(), runRequest.getLanguage());
+        String finalCode = driverCode.append("\n").append(runRequest.getSourceCode()).toString();
+        String stdin = testcaseFactory.buildTestcases(runRequest.getProblemId(), TestCaseType.SAMPLE).getStdin();
+        JudgeRequest judgeRequest = new JudgeRequest(finalCode,
+                                        judgeService.getJudgeLanguageId(runRequest.getLanguage()),
+                                        stdin,
+                                        callbackUrl);
+        return new RunJob(runRequest.getProblemId(), judgeRequest,new CompletableFuture<>());
+    }
+
+}
+</file>
+
+<file path="serviceImpl/job/SubmissionJobFactory.java">
+package com.fastlearner.project0.serviceImpl.job;
+
+import com.fastlearner.project0.dto.job.SubmissionJob;
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
+import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
+import com.fastlearner.project0.enums.TestCaseType;
+import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import com.fastlearner.project0.service.judge.JudgeService;
+import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
+@RequiredArgsConstructor
+@Component
+public class SubmissionJobFactory
+{
+    private final CodeGeneratorService codeGeneratorService;
+    private final TestcaseFactory testcaseFactory;
+    private final JudgeService judgeService;
+    @Value("${judge.api.run.callbackUrl}")
+    private String callbackUrl;
+    public SubmissionJob createJob(CreateSubmissionRequest request,Long submissionId)
+    {
+        StringBuilder driverCode = codeGeneratorService.generateDriverCode(
+                request.getProblemId(),
+                request.getLanguage()
+        );
+        String finalCode = driverCode.append("\n").append(request.getSourceCode()).toString();
+        String stdin = testcaseFactory.buildTestcases(request.getProblemId(), TestCaseType.HIDDEN).getStdin();
+        JudgeRequest judgeRequest = new JudgeRequest(finalCode,
+                judgeService.getJudgeLanguageId(request.getLanguage()),
+                stdin,
+                callbackUrl);
+        return new SubmissionJob(judgeRequest, new CompletableFuture<>(),submissionId, request.getProblemId());
+    }
+
+}
+</file>
+
+<file path="serviceImpl/judge/EvaluateJudge0Response.java">
+package com.fastlearner.project0.serviceImpl.judge;
+
+import com.fastlearner.project0.service.judge.EvaluateJudgeResponse;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EvaluateJudge0Response implements EvaluateJudgeResponse
+{
+    public int getPassedTestCases(String expectedOutput,String actualOutput)
+    {
+        if(actualOutput==null) return 0;
+        String[] expectedOutputArray = expectedOutput.split("\n");
+        String[] actualOutputArray = actualOutput.split("\n");
+        int n = Math.min(expectedOutputArray.length,actualOutputArray.length);
+        int passedTestCases = 0;
+        for(int i=0;i<n;i++)
+        {
+            if(normalize(expectedOutputArray[i]).equals(normalize(actualOutputArray[i]))) passedTestCases++;
+            else break;
+        }
+        return passedTestCases;
+    }
+    private String normalize(String s)
+    {
+        return s
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .trim();
+    }
+}
+</file>
+
+<file path="serviceImpl/judge/Judge0Service.java">
 package com.fastlearner.project0.serviceImpl.judge;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fastlearner.project0.dto.judge.JudgeDTO;
 import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
-
 import com.fastlearner.project0.dto.judge0.batch.Judge0BatchSubmissionRequest;
 import com.fastlearner.project0.enums.Language;
 import com.fastlearner.project0.exceptions.UnsupportedLanguageException;
 import com.fastlearner.project0.service.judge.JudgeService;
-import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
-public class Judge0ServiceImpl implements JudgeService
+@RequiredArgsConstructor
+public class Judge0Service implements JudgeService
 {
     private final RestTemplate restTemplate;
     @Value("${judge0.api.url}")
     private String judge0Url;
-    @Value("${judge0.api.callbackUrl}")
-    private String callbackUrl;
     private final ObjectMapper objectMapper;
-    public Judge0ServiceImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
-    }
     @Override
-    public Integer getJudge0LanguageId(Language language) {
-        switch(language)
-        {
-            case JAVA:
-                return 62;
-            case CPP:
-                return 54;
-            case PYTHON:
-                return 100;
-            default:
-                throw new UnsupportedLanguageException("LANGUAGE_NOT_SUPPORTED");
-        }
+    public Integer getJudgeLanguageId(Language language) {
+        return switch (language) {
+            case JAVA -> 62;
+            case CPP -> 54;
+            case PYTHON -> 100;
+            default -> throw new UnsupportedLanguageException("LANGUAGE_NOT_SUPPORTED");
+        };
     }
-
-    @Override
-    public Judge0TokenResponse[] executeBatch(List<JudgeDTO> submissionsToJudge) {
+    public Judge0TokenResponse[] execute(List<JudgeRequest> judgeRequests)
+    {
         Judge0BatchSubmissionRequest batchRequest = new Judge0BatchSubmissionRequest();
-        List<Judge0SubmissionRequest> request = new ArrayList<>();
-        for(JudgeDTO submission : submissionsToJudge)
-        {
-            int languageId = getJudge0LanguageId(submission.getLanguage());
-            String sourceCode = submission.getFinalCode();
-            String input = submission.getInput();
-            Judge0SubmissionRequest submissionRequest = new Judge0SubmissionRequest();
-            submissionRequest.setLanguageId(languageId);
-            submissionRequest.setStdin(input);
-            submissionRequest.setSourceCode(sourceCode);
-            submissionRequest.setCallbackUrl(callbackUrl);
-            request.add(submissionRequest);
-        }
-        batchRequest.setSubmissions(request);
+        batchRequest.setSubmissions(judgeRequests);
         try {
             String jsonPayload = objectMapper.writeValueAsString(batchRequest);
             System.out.println("SENDING DATA : "+jsonPayload);
@@ -2671,7 +2953,6 @@ public class Judge0ServiceImpl implements JudgeService
                     entity,
                     Judge0TokenResponse[].class
             );
-//            System.out.println("RESPONSE : "+response);
             for(int i=0;i<response.getBody().length;i++)
             {
                 System.out.println("TOKEN : "+response.getBody()[i]);
@@ -2769,12 +3050,180 @@ public class ProblemServiceImpl implements ProblemService {
         problemFromDB.setInputFormat(problemDTO.getInputFormat());
         problemFromDB.setOutputFormat(problemDTO.getOutputFormat());
         problemFromDB.setDifficulty(problemDTO.getDifficulty());
-        problemFromDB.setMemoryLimitMb(problemDTO.getMemoryLimitMs());
+        problemFromDB.setMemoryLimitKb(problemDTO.getMemoryLimitKb());
         problemFromDB.setTimeLimitMs(problemDTO.getTimeLimitMs());
         Problem savedProblem = problemRepository.save(problem);
         return modelMapper.map(savedProblem,ProblemResponse.class);
     }
 }
+</file>
+
+<file path="serviceImpl/run/evaluation/RunEvaluatorServiceImpl.java">
+package com.fastlearner.project0.serviceImpl.run.evaluation;
+
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
+import com.fastlearner.project0.enums.TestCaseType;
+import com.fastlearner.project0.service.judge.EvaluateJudgeResponse;
+import com.fastlearner.project0.service.run.evaluation.RunEvaluatorService;
+import com.fastlearner.project0.service.run.registery.PendingRunExecutionRegistry;
+import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@RequiredArgsConstructor
+@Service
+public class RunEvaluatorServiceImpl implements RunEvaluatorService {
+    private final PendingRunExecutionRegistry pendingRunExecutionRegistry;
+    private final TestcaseFactory testcaseFactory;
+    private final EvaluateJudgeResponse evaluateJudgeResponse;
+    public void evaluate(Judge0SubmissionResponse body)
+    {
+        RunJob job = pendingRunExecutionRegistry.get(body.getToken());
+        pendingRunExecutionRegistry.remove(body.getToken());
+        TestcaseFactoryResponse factoryResponse = testcaseFactory.buildTestcases(job.getProblemId(), TestCaseType.HIDDEN);
+        int totalTestcases = factoryResponse.getNumberOfTestCases();
+        int passedTestcases = evaluateJudgeResponse.getPassedTestCases(factoryResponse.getStdin(), body.getStdout());
+
+    }
+}
+</file>
+
+<file path="serviceImpl/run/execution/RunExecutionServiceImpl.java">
+package com.fastlearner.project0.serviceImpl.run.execution;
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
+import com.fastlearner.project0.service.judge.JudgeService;
+import com.fastlearner.project0.service.run.execution.RunExecutionService;
+import com.fastlearner.project0.service.run.queue.RunExecutionQueue;
+import com.fastlearner.project0.service.run.registery.PendingRunExecutionRegistry;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RequiredArgsConstructor
+@Service
+public class RunExecutionServiceImpl implements RunExecutionService
+{
+    private final RunExecutionQueue executionQueue;
+    private final JudgeService judgeService;
+    private final PendingRunExecutionRegistry pendingExecutionRegistry;
+    public void execute() throws InterruptedException {
+        List<RunJob> jobs = new ArrayList<>();
+        while(!executionQueue.isEmpty())
+        {
+            jobs.add(executionQueue.take());
+        }
+        List<JudgeRequest> judgeRequests = jobs.stream().map(job -> job.getJudgeRequest()).toList();
+        Judge0TokenResponse[] tokens = judgeService.execute(judgeRequests);
+        for(int i=0;i<tokens.length;i++)
+        {
+            pendingExecutionRegistry.put(tokens[i].getToken(),jobs.get(i));
+        }
+    }
+}
+</file>
+
+<file path="serviceImpl/run/queue/RunExecutionQueueImpl.java">
+package com.fastlearner.project0.serviceImpl.run.queue;
+
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.service.run.queue.RunExecutionQueue;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+@Component
+public class RunExecutionQueueImpl implements RunExecutionQueue {
+    private final BlockingQueue<RunJob> queue =  new LinkedBlockingQueue<>(1000);
+    @Override
+    public void enqueue(RunJob job) {
+        queue.offer(job);
+    }
+
+    @Override
+    public RunJob take() throws InterruptedException {
+        return queue.take();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
+}
+</file>
+
+<file path="serviceImpl/run/registry/PendingRunExecutionRegistryImpl.java">
+package com.fastlearner.project0.serviceImpl.run.registry;
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.service.run.registery.PendingRunExecutionRegistry;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
+@Component
+public class PendingRunExecutionRegistryImpl implements PendingRunExecutionRegistry
+{
+    private final ConcurrentHashMap<String, RunJob> pendingExecutions = new ConcurrentHashMap<>();
+
+    @Override
+    public void put(String token, RunJob job) {
+        pendingExecutions.put(token, job);
+    }
+    @Override
+    public RunJob get(String token) {
+        return pendingExecutions.get(token);
+    }
+    @Override
+    public void remove(String token) {
+        pendingExecutions.remove(token);
+    }
+}
+</file>
+
+<file path="serviceImpl/run/RunServiceImpl.java">
+package com.fastlearner.project0.serviceImpl.run;
+import com.fastlearner.project0.dto.job.RunJob;
+import com.fastlearner.project0.dto.run.RunRequestDTO;
+import com.fastlearner.project0.dto.run.RunResponseDTO;
+import com.fastlearner.project0.exceptions.AuthenticationException;
+import com.fastlearner.project0.service.run.RunService;
+import com.fastlearner.project0.service.run.queue.RunExecutionQueue;
+import com.fastlearner.project0.serviceImpl.job.RunJobFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@RequiredArgsConstructor
+public class RunServiceImpl implements RunService
+{
+    private final RunJobFactory runJobFactory;
+    private final RunExecutionQueue executionQueue;
+    @Override
+    public CompletableFuture<RunResponseDTO> run(RunRequestDTO runRequest) {
+        Long problemId = runRequest.getProblemId();
+        if(problemId == null || problemId <= 0) throw new IllegalArgumentException("INVALID_PROBLEM_ID");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null) throw new AuthenticationException("AUTHENTICATION_NEEDED");
+        RunJob job = runJobFactory.createJob(runRequest);
+        executionQueue.enqueue(job);
+        return job.getFuture();
+    }
+
+
+}
+/*
+finalCode
+language
+input
+ */
 </file>
 
 <file path="serviceImpl/structure/StructureServiceImpl.java">
@@ -2792,22 +3241,19 @@ import com.fastlearner.project0.repository.ProblemRepository;
 import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.structure.StructureService;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class StructureServiceImpl implements StructureService
 {
     private final ModelMapper modelMapper;
     private final ProblemRepository problemRepository;
     private final StructureRepository structureRepository;
     private final CodeGeneratorService codeGeneratorService;
-    public StructureServiceImpl(ModelMapper modelMapper, ProblemRepository problemRepository, StructureRepository structureRepository, CodeGeneratorService codeGeneratorService) {
-        this.modelMapper = modelMapper;
-        this.problemRepository = problemRepository;
-        this.structureRepository = structureRepository;
-        this.codeGeneratorService = codeGeneratorService;
-    }
+
     @Override
     public StructureDTO saveProblemTemplate(StructureDTO structureDTO, Long problemId) {
         if(problemId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_ID_ProblemTemplateServiceImpl");
@@ -2844,10 +3290,8 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public AdminStructureResponse getProblemTemplate(Language language, Long problemId) {
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_ID_NOT_FOUND_ProblemTemplateImpl"));
-        Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("PROBLEM_TEMPLATE_NOT_FOUND_ProblemTemplateImpl"));
-        String driverCode = codeGeneratorService.generateDriverCode(structure,language);
-        String starterCode = codeGeneratorService.generateStarterCode(structure,language);
+        String driverCode = codeGeneratorService.generateDriverCode(problemId,language).toString();
+        String starterCode = codeGeneratorService.generateStarterCode(problemId,language).toString();
         AdminStructureResponse adminStructureResponse = new AdminStructureResponse();
         adminStructureResponse.setDriverCode(driverCode);
         adminStructureResponse.setStarterCode(starterCode);
@@ -2856,83 +3300,43 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public StudentStructureResponse getStarterCode(Long problemId,Language language) {
-        if(problemId<=0) throw new InvalidArgumentException("PROBLEM_ID_ProblemTemplateServiceImpl");
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND_ProblemTemplateImpl"));
-        Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("STRUCTURE_NOT_FOUND_ProblemTemplateImpl"));
-        String starterCode = codeGeneratorService.generateStarterCode(structure,language);
+        StringBuilder starterCode = codeGeneratorService.generateStarterCode(problemId,language);
         StudentStructureResponse studentStructureResponse = new StudentStructureResponse();
-        studentStructureResponse.setStarterCode(starterCode);
+        studentStructureResponse.setStarterCode(starterCode.toString());
         return studentStructureResponse;
     }
 }
 </file>
 
-<file path="serviceImpl/submission/SubmissionEvaluatorServiceImpl.java">
-package com.fastlearner.project0.serviceImpl.submission;
-
-
+<file path="serviceImpl/submission/evaluation/SubmissionEvaluatorServiceImpl.java">
+package com.fastlearner.project0.serviceImpl.submission.evaluation;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+import com.fastlearner.project0.dto.submission.SubmissionResponse;
+import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.Submission;
-import com.fastlearner.project0.entity.TestCase;
 import com.fastlearner.project0.enums.SubmissionStatus;
+import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.SubmissionRepository;
-import com.fastlearner.project0.repository.TestCaseRepository;
 import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
+import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
+
+@RequiredArgsConstructor
 @Service
 public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorService
 {
-    private final TestCaseRepository testCaseRepository;
+    private final TestcaseFactory testcaseFactory;
     private final SubmissionRepository submissionRepository;
+    private final ModelMapper modelMapper;
 
-    public SubmissionEvaluatorServiceImpl(TestCaseRepository testCaseRepository, SubmissionRepository submissionRepository1) {
-        this.testCaseRepository = testCaseRepository;
-        this.submissionRepository = submissionRepository1;
-    }
-
-    private String normalize(String s)
-    {
-        return s
-                .replace("\r\n", "\n")
-                .replace("\r", "\n")
-                .trim();
-    }
-
-    private int getPassedTestCases(String expectedOutput,String actualOutput)
-    {
-        if(actualOutput==null) return 0;
-        String[] expectedOutputArray = expectedOutput.split("\n");
-        String[] actualOutputArray = actualOutput.split("\n");
-        int n = Math.min(expectedOutputArray.length,actualOutputArray.length);
-        int passedTestCases = 0;
-        //if(expectedOutputArray.length != actualOutputArray.length) throw new InvalidDriverCodeException("SOME_ISSUE_IN_DRIVER_CODE");
-        for(int i=0;i<n;i++)
-        {
-            if(normalize(expectedOutputArray[i]).equals(normalize(actualOutputArray[i]))) passedTestCases++;
-            else break;
-        }
-        return passedTestCases;
-    }
-    /*
-    public class Judge0SubmissionResponse
-{
-    private String stdout;
-    private String stderr;
-    private String compile_output;
-    private String time;
-    private Integer memory;
-    private Judge0Status status;
-    private String token;
-    private String message;
-}
-     */
     private Verdict mapVerdict(Judge0SubmissionResponse response)
     {
         Integer statusId = response.getStatus().getId();
@@ -2948,6 +3352,7 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
     }
     private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput, int size, Submission submission)
     {
+        /*
         int passedTestCases=0;
         String actualOutput = result.getStdout();
         Verdict judgeVerdict = mapVerdict(result);
@@ -2980,138 +3385,127 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
         submission.setTotalTestCases(size);
         submission.setStatus(SubmissionStatus.COMPLETED);
         submission.setCompletedAt(LocalDateTime.now());
-    }
-    /*
-Submission
--Long id
--String sourceCode
--Language language
--Verdict verdict
--SubmissionStatus status
--Double executionTimeMs
--Long memoryUserKb
--Integer passedTestCases
--Integer totalTestCases
--LocalDateTime submittedAt
--String errorMessage
--User user
--Problem problem
--String token
--LocalDateTime startedAt
--LocalDateTime completedAt
- */
 
-    private String buildTestCasesData(List<TestCase> testCases)
-    {
-        StringBuilder expectedOutput = new StringBuilder();
-        for(TestCase testCase : testCases)
-        {
-            expectedOutput.append(testCase.getExpectedOutput());
-            expectedOutput.append("\n");
-        }
-        return expectedOutput.toString();
+         */
     }
 
     @Override
     public void evaluateResponse(Judge0SubmissionResponse response) {
+        /*
+        String token = response.getToken();
+        Job<SubmissionResponse> job = (Job<SubmissionResponse>) pendingExecutionRegistry.get(token);
         Submission submission = submissionRepository.findByToken(response.getToken()).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
         Problem problem = submission.getProblem();
-        List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
-        String expectedOutput = buildTestCasesData(testCases);
-        modifySubmission(response,expectedOutput,testCases.size(),submission);
+        TestcaseFactoryResponse testcasesResponse= testcaseFactory.buildTestcases(problem.getId(), TestCaseType.HIDDEN);
+        modifySubmission(response,testcasesResponse.getStdin(),testcasesResponse.getNumberOfTestCases(),submission);
         long totalTimeMs = Duration.between(submission.getSubmittedAt(), submission.getCompletedAt()).toMillis();
         long judgeProcessingTime = Duration.between(submission.getStartedAt(), submission.getCompletedAt()).toMillis();
         System.out.println("Judge processing time: " + judgeProcessingTime);
         System.out.println("Total time: " + totalTimeMs);
+        job.getFuture().complete(modelMapper.map(submission, SubmissionResponse.class));
         submissionRepository.save(submission);
+
+         */
     }
 
 }
 </file>
 
-<file path="serviceImpl/submission/SubmissionProcessingServiceImpl.java">
-package com.fastlearner.project0.serviceImpl.submission;
-
-import com.fastlearner.project0.dto.judge.JudgeDTO;
+<file path="serviceImpl/submission/execution/SubmissionExecutionServiceImpl.java">
+package com.fastlearner.project0.serviceImpl.submission.execution;
+import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.dto.judge0.Judge0TokenResponse;
-import com.fastlearner.project0.entity.Problem;
-import com.fastlearner.project0.entity.Structure;
-import com.fastlearner.project0.entity.Submission;
-import com.fastlearner.project0.entity.TestCase;
-import com.fastlearner.project0.enums.Language;
-import com.fastlearner.project0.exceptions.ResourceNotFoundException;
-import com.fastlearner.project0.repository.StructureRepository;
-import com.fastlearner.project0.repository.SubmissionRepository;
-import com.fastlearner.project0.repository.TestCaseRepository;
+import com.fastlearner.project0.dto.judge0.JudgeRequest;
 import com.fastlearner.project0.service.judge.JudgeService;
-import com.fastlearner.project0.service.submission.SubmissionProcessingService;
-import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
-import org.springframework.scheduling.annotation.Async;
+import com.fastlearner.project0.service.submission.execution.SubmissionExecutionService;
+import com.fastlearner.project0.service.submission.queue.SubmissionExecutionQueue;
+import com.fastlearner.project0.service.submission.registery.PendingSubmissionExecutionRegistry;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
-public class SubmissionProcessingServiceImpl implements SubmissionProcessingService {
-    private final SubmissionRepository submissionRepository;
-    private final StructureRepository structureRepository;
-    private final TestCaseRepository testCaseRepository;
+public class SubmissionExecutionServiceImpl implements SubmissionExecutionService
+{
+    private final SubmissionExecutionQueue executionQueue;
     private final JudgeService judgeService;
-    private final CodeGeneratorService codeGeneratorService;
-
-    public SubmissionProcessingServiceImpl(SubmissionRepository submissionRepository, StructureRepository structureRepository, TestCaseRepository testCaseRepository, JudgeService judgeService, CodeGeneratorService codeGeneratorService) {
-        this.submissionRepository = submissionRepository;
-        this.structureRepository = structureRepository;
-        this.testCaseRepository = testCaseRepository;
-        this.judgeService = judgeService;
-        this.codeGeneratorService = codeGeneratorService;
-    }
-    private void applyTestCasesData(List<TestCase> testCases,StringBuilder input)
-    {
-        input.append(testCases.size());
-        input.append("\n");
-        for(TestCase testCase : testCases)
+    private final PendingSubmissionExecutionRegistry pendingExecutionRegistry;
+    public void execute() throws InterruptedException {
+        List<SubmissionJob> jobs = new ArrayList<>();
+        while(!executionQueue.isEmpty())
         {
-            input.append(testCase.getInputData());
-            input.append("\n");
+            jobs.add(executionQueue.take());
         }
-    }
-
-    @Override
-    @Async("judgeTaskExecutor") // <-- Change line 50 to this
-    public void processBatchSubmissions(List<Long> submissionIds) {
-        List<Submission> submissions = submissionRepository.findAllById(submissionIds);
-        List<JudgeDTO> submissionsToJudge = new ArrayList<>();
-        for(Submission submission : submissions)
-        {
-            Problem problem = submission.getProblem();
-            Language language = submission.getLanguage();
-            String sourceCode = submission.getSourceCode();
-            Structure structure = structureRepository.findByProblem(problem).orElseThrow(()->new ResourceNotFoundException("DRIVER_CODE_NOT_FOUND_SubmissionProcessingImpl"));
-            String driverCode = codeGeneratorService.generateDriverCode(structure, language);
-            String inputParserCode = codeGeneratorService.generateInputUtilityCode(language);
-            String outputParserCode = codeGeneratorService.generateJavaOutputUtilityCode(language);
-            String finalCode = driverCode+"\n"+sourceCode+"\n"+inputParserCode+"\n"+outputParserCode;
-            List<TestCase> testCases = testCaseRepository.findByProblemId(problem.getId()).orElseThrow(() -> new ResourceNotFoundException("TEST_CASE_NOT_FOUND"));
-            StringBuilder input = new StringBuilder();
-            applyTestCasesData(testCases,input);
-            submissionsToJudge.add(new JudgeDTO(finalCode,language,input.toString()));
-        }
-        Judge0TokenResponse[] tokens = judgeService.executeBatch(submissionsToJudge);
+        List<JudgeRequest> judgeRequests = jobs.stream().map(job -> job.getJudgeRequest()).toList();
+        Judge0TokenResponse[] tokens = judgeService.execute(judgeRequests);
         for(int i=0;i<tokens.length;i++)
         {
-            submissions.get(i).setToken(tokens[i].getToken());
-            //submissionRepository.save(submissions.get(i));
+            pendingExecutionRegistry.put(tokens[i].getToken(),jobs.get(i));
         }
-// 3. Save EVERYTHING to the database in a single batch call
-        submissionRepository.saveAll(submissions); // <-- CHANGE THIS TO saveAll()
+    }
+}
+</file>
+
+<file path="serviceImpl/submission/queue/SubmissionExecutionQueueImpl.java">
+package com.fastlearner.project0.serviceImpl.submission.queue;
+
+import com.fastlearner.project0.dto.job.SubmissionJob;
+import com.fastlearner.project0.service.submission.queue.SubmissionExecutionQueue;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+@Component
+public class SubmissionExecutionQueueImpl implements SubmissionExecutionQueue {
+    private final BlockingQueue<SubmissionJob> queue =  new LinkedBlockingQueue<>(1000);
+    @Override
+    public void enqueue(SubmissionJob job) {
+        queue.offer(job);
+    }
+    @Override
+    public SubmissionJob take() throws InterruptedException {
+        return queue.take();
+    }
+    @Override
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+}
+</file>
+
+<file path="serviceImpl/submission/registry/PendingSubmissionExecutionRegistryImpl.java">
+package com.fastlearner.project0.serviceImpl.submission.registry;
+import com.fastlearner.project0.dto.job.SubmissionJob;
+import com.fastlearner.project0.service.submission.registery.PendingSubmissionExecutionRegistry;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
+@Component
+public class PendingSubmissionExecutionRegistryImpl implements PendingSubmissionExecutionRegistry
+{
+    private final ConcurrentHashMap<String, SubmissionJob> pendingExecutions = new ConcurrentHashMap<>();
+
+    @Override
+    public void put(String token, SubmissionJob job) {
+        pendingExecutions.put(token, job);
+    }
+    @Override
+    public SubmissionJob get(String token) {
+        return pendingExecutions.get(token);
+    }
+    @Override
+    public void remove(String token) {
+        pendingExecutions.remove(token);
     }
 }
 </file>
 
 <file path="serviceImpl/submission/SubmissionServiceImpl.java">
 package com.fastlearner.project0.serviceImpl.submission;
+import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.dto.submission.CreateSubmissionRequest;
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
 import com.fastlearner.project0.entity.*;
@@ -3120,33 +3514,29 @@ import com.fastlearner.project0.enums.Verdict;
 import com.fastlearner.project0.exceptions.AuthenticationException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.*;
-import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
-import com.fastlearner.project0.service.submission.SubmissionProcessingService;
 import com.fastlearner.project0.service.submission.SubmissionService;
+import com.fastlearner.project0.service.submission.queue.SubmissionExecutionQueue;
+import com.fastlearner.project0.serviceImpl.job.SubmissionJobFactory;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Service
+@RequiredArgsConstructor
 public class SubmissionServiceImpl implements SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
-    private final SubmissionProcessingService submissionProcessingService;
-
-    public SubmissionServiceImpl(SubmissionRepository submissionRepository, ModelMapper modelMapper, UserRepository userRepository, ProblemRepository problemRepository, SubmissionProcessingService submissionProcessingService, SubmissionEvaluatorService submissionEvaluatorService) {
-        this.submissionRepository = submissionRepository;
-        this.modelMapper = modelMapper;
-        this.userRepository = userRepository;
-        this.problemRepository = problemRepository;
-        this.submissionProcessingService = submissionProcessingService;
-    }
+    private final SubmissionJobFactory submissionJobFactory;
+    private final SubmissionExecutionQueue executionQueue;
 
     private void markSubmissionBeforeJudge(Submission submission,User user,Problem problem,CreateSubmissionRequest request)
     {
@@ -3160,39 +3550,24 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
     @Override
-    public SubmissionResponse submit(CreateSubmissionRequest request)
+    public CompletableFuture<SubmissionResponse> submit(CreateSubmissionRequest request)
     {
         Long problemId = request.getProblemId();
         if(problemId == null || problemId <= 0) throw new IllegalArgumentException("INVALID_PROBLEM_ID");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null) throw new AuthenticationException("AUTHENTICATION_NEEDED");
-
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("USER_NOT_FOUND"));
         Problem problem = problemRepository.findById(problemId).orElseThrow(() -> new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+
         Submission submission = new Submission();
         markSubmissionBeforeJudge(submission,user,problem,request);
-        submissionRepository.save(submission);
-        //submissionProcessingService.processSubmission(submission.getId());
-        return modelMapper.map(submission,SubmissionResponse.class);
+        Submission savedSubmission = submissionRepository.save(submission);
+        SubmissionJob job = submissionJobFactory.createJob(request,savedSubmission.getId());
+        executionQueue.enqueue(job);
+        return job.getFuture();
     }
 
-    @Scheduled(fixedDelay = 1000)
-    public void processPendingSubmissions()
-    {
-        List<Submission> submissions = submissionRepository.findSubmissionsToJudge();
-        List<Long> submissionIds = new ArrayList<>();
-        if(submissions.isEmpty()) return;
-        for(Submission submission : submissions)
-        {
-            submission.setStatus(SubmissionStatus.RUNNING);
-            submission.setStartedAt(LocalDateTime.now());
-            submissionIds.add(submission.getId());
-//            submissionRepository.save(submission);
-        }
-        submissionRepository.saveAll(submissions);
-        submissionProcessingService.processBatchSubmissions(submissionIds);
-    }
     @Override
     public SubmissionResponse getSubmissionById(Long id) {
         Submission submission = submissionRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
@@ -3201,12 +3576,15 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Override
     public List<SubmissionResponse> getSubmissionsByProblemId(Long problemId) {
-        return null;
+       List<Submission> submissions =  submissionRepository.findByProblemId(problemId);
+       return submissions.stream().map(submission -> modelMapper.map( submission,SubmissionResponse.class)).toList();
     }
 
     @Override
     public List<SubmissionResponse> getMySubmissions() {
-        return null;
+        UserDetails currentUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Submission> submissions = submissionRepository.findByUserEmail(currentUser.getUsername());
+        return submissions.stream().map(submission->modelMapper.map(submission,SubmissionResponse.class)).toList();
     }
 }
 </file>
@@ -3335,18 +3713,13 @@ package com.fastlearner.project0.serviceImpl.util;
 
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
 import com.fastlearner.project0.service.util.DecoderService;
-import com.fastlearner.project0.service.submission.SubmissionEvaluatorService;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 @Service
 public class DecoderServiceImpl implements DecoderService
 {
-    private final SubmissionEvaluatorService submissionEvaluatorService;
 
-    public DecoderServiceImpl(SubmissionEvaluatorService submissionEvaluatorService) {
-        this.submissionEvaluatorService = submissionEvaluatorService;
-    }
     private String decode(String value)
     {
         if(value == null) return null;
@@ -3362,34 +3735,34 @@ public class DecoderServiceImpl implements DecoderService
         response.setMessage(decode(response.getMessage()));
         System.out.println("RESPONSE : "+response);
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++");
-        submissionEvaluatorService.evaluateResponse(response);
     }
 }
 </file>
 
-<file path="serviceImpl/RunServiceImpl.java">
-package com.fastlearner.project0.serviceImpl;
+<file path="serviceImpl/util/TestcaseFactory.java">
+package com.fastlearner.project0.serviceImpl.util;
 
-import com.fastlearner.project0.dto.run.RunRequestDTO;
-import com.fastlearner.project0.dto.run.RunResponseDTO;
+import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
+import com.fastlearner.project0.entity.TestCase;
+import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.repository.TestCaseRepository;
-import com.fastlearner.project0.service.problem.ProblemService;
-import com.fastlearner.project0.service.RunService;
-import org.springframework.stereotype.Service;
-
-@Service
-public class RunServiceImpl implements RunService
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import java.util.List;
+@Component
+@RequiredArgsConstructor
+public class TestcaseFactory
 {
     private final TestCaseRepository testCaseRepository;
-    private final ProblemService problemService;
-    public RunServiceImpl(TestCaseRepository testCaseRepository, ProblemService problemService) {
-        this.testCaseRepository = testCaseRepository;
-        this.problemService = problemService;
-    }
-
-    @Override
-    public RunResponseDTO run(RunRequestDTO runRequest) {
-        return null;
+    public TestcaseFactoryResponse buildTestcases(Long problemId, TestCaseType testcaseType) {
+        List<TestCase> testcases = testCaseRepository.findByProblemIdAndTestCaseType(problemId,testcaseType);
+        StringBuilder input = new StringBuilder();
+        for(TestCase testcase : testcases){
+            if(testcase.getTestCaseType().equals(testcaseType)){
+                input.append(testcase.getExpectedOutput()).append("\n");
+            }
+        }
+        return new TestcaseFactoryResponse(input.toString(),testcases.size());
     }
 }
 </file>
@@ -3402,7 +3775,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableScheduling
 public class 	Project0Application {
 
 	public static void main(String[] args) {
