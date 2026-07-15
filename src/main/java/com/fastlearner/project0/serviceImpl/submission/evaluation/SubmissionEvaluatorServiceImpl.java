@@ -41,6 +41,7 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
     }
     private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput, int size, Submission submission)
     {
+        /*
         int passedTestCases=0;
         String actualOutput = result.getStdout();
         Verdict judgeVerdict = mapVerdict(result);
@@ -73,10 +74,13 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
         submission.setTotalTestCases(size);
         submission.setStatus(SubmissionStatus.COMPLETED);
         submission.setCompletedAt(LocalDateTime.now());
+
+         */
     }
 
     @Override
     public void evaluateResponse(Judge0SubmissionResponse response) {
+        /*
         String token = response.getToken();
         Job<SubmissionResponse> job = (Job<SubmissionResponse>) pendingExecutionRegistry.get(token);
         Submission submission = submissionRepository.findByToken(response.getToken()).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
@@ -89,6 +93,8 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
         System.out.println("Total time: " + totalTimeMs);
         job.getFuture().complete(modelMapper.map(submission, SubmissionResponse.class));
         submissionRepository.save(submission);
+
+         */
     }
 
 }

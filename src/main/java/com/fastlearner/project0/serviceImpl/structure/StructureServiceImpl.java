@@ -68,6 +68,11 @@ public class StructureServiceImpl implements StructureService
         adminStructureResponse.setStarterCode(starterCode);
         return adminStructureResponse;
     }
+    @Override
+    public Structure getStructure(Long problemId)
+    {
+        return structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("STRUCTURE_NOT_FOUND_PROBLEM"));
+    }
 
     @Override
     public StudentStructureResponse getStarterCode(Long problemId,Language language) {

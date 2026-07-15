@@ -4,6 +4,6 @@ import com.fastlearner.project0.enums.Language;
 
 public interface CodeGeneratorService
 {
-    public StringBuilder generateDriverCode(Long problemId, Language language);
-    public StringBuilder generateStarterCode(Long problemId, Language language);
+    public String generateDriverCode(Long problemId, Language language);
+    public String generateStarterCode(Long problemId, Language language);
 }

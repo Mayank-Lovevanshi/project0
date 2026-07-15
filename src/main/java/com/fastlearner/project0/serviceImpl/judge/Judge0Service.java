@@ -26,17 +26,12 @@ public class Judge0Service implements JudgeService
     private final ObjectMapper objectMapper;
     @Override
     public Integer getJudgeLanguageId(Language language) {
-        switch(language)
-        {
-            case JAVA:
-                return 62;
-            case CPP:
-                return 54;
-            case PYTHON:
-                return 100;
-            default:
-                throw new UnsupportedLanguageException("LANGUAGE_NOT_SUPPORTED");
-        }
+        return switch (language) {
+            case JAVA -> 62;
+            case CPP -> 54;
+            case PYTHON -> 100;
+            default -> throw new UnsupportedLanguageException("LANGUAGE_NOT_SUPPORTED");
+        };
     }
     public Judge0TokenResponse[] execute(List<JudgeRequest> judgeRequests)
     {

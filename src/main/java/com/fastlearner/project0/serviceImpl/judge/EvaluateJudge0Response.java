@@ -1,9 +1,10 @@
 package com.fastlearner.project0.serviceImpl.judge;
 
+import com.fastlearner.project0.service.judge.EvaluateJudgeResponse;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EvaluateJudge0Response
+public class EvaluateJudge0Response implements EvaluateJudgeResponse
 {
     public int getPassedTestCases(String expectedOutput,String actualOutput)
     {
