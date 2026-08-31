@@ -12,12 +12,14 @@ public class EvaluateJudge0Response implements EvaluateJudgeResponse
         String[] expectedOutputArray = expectedOutput.split("\n");
         String[] actualOutputArray = actualOutput.split("\n");
         int n = Math.min(expectedOutputArray.length,actualOutputArray.length);
+        System.out.println("Total testcases : "+n);
         int passedTestCases = 0;
         for(int i=0;i<n;i++)
         {
             if(normalize(expectedOutputArray[i]).equals(normalize(actualOutputArray[i]))) passedTestCases++;
             else break;
         }
+        System.out.println("Passed testcases : "+passedTestCases);
         return passedTestCases;
     }
     private String normalize(String s)

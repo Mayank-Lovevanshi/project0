@@ -77,12 +77,13 @@ public class ProblemServiceImpl implements ProblemService {
         problemFromDB.setTitle(problemDTO.getTitle());
         problemFromDB.setStatement(problemDTO.getStatement());
         problemFromDB.setConstraints(problemDTO.getConstraints());
-        problemFromDB.setInputFormat(problemDTO.getInputFormat());
-        problemFromDB.setOutputFormat(problemDTO.getOutputFormat());
         problemFromDB.setDifficulty(problemDTO.getDifficulty());
-        problemFromDB.setMemoryLimitKb(problemDTO.getMemoryLimitKb());
-        problemFromDB.setTimeLimitMs(problemDTO.getTimeLimitMs());
         Problem savedProblem = problemRepository.save(problem);
         return modelMapper.map(savedProblem,ProblemResponse.class);
     }
+    public Problem findById(Long id)
+    {
+        return problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+    }
+
 }

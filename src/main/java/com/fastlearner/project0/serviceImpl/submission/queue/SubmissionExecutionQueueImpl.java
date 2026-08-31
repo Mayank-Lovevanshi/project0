@@ -1,11 +1,14 @@
 package com.fastlearner.project0.serviceImpl.submission.queue;
 
+import com.fastlearner.project0.dto.job.RunJob;
 import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.service.submission.queue.SubmissionExecutionQueue;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class SubmissionExecutionQueueImpl implements SubmissionExecutionQueue {
     private final BlockingQueue<SubmissionJob> queue =  new LinkedBlockingQueue<>(1000);
@@ -17,8 +20,14 @@ public class SubmissionExecutionQueueImpl implements SubmissionExecutionQueue {
     public SubmissionJob take() throws InterruptedException {
         return queue.take();
     }
+
     @Override
     public boolean isEmpty() {
         return queue.isEmpty();
+    }
+
+    @Override
+    public SubmissionJob poll() {
+        return queue.poll();
     }
 }

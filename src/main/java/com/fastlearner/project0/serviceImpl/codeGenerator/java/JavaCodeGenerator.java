@@ -34,7 +34,7 @@ public class JavaCodeGenerator implements LanguageCodeGenerator {
                 
                     }
                 }
-                """.formatted(returnType,structure.getReturnType(),parameterList);
+                """.formatted(returnType,structure.getMethodName(),parameterList);
     }
 
     @Override
@@ -58,62 +58,32 @@ public class JavaCodeGenerator implements LanguageCodeGenerator {
                 .map(Parameter::getName)
                 .collect(Collectors.joining(", "));
 
-        // 3. Create the list of RuntimeData elements matching our unified design
-        String parameterObjectsList = structure.getParameters().stream()
-                .map(param -> String.format("new RuntimeData(\"%s\", \"%s\", %d, %s)",
-                        param.getName(),
-                        param.getType().getBaseType().name(),
-                        param.getType().getDimensions(),
-                        param.getName()))
-                .collect(Collectors.joining(", "));
 
-        // 4. Generate the main runner class, using RuntimeData instantiations
+        // 3. Generate the main runner class
         String driverTemplate =
                 """
-                import java.io.*;
-                import java.util.*;
-                
-                public class Main {
-                    public static void main(String[] args) {
-                        String filePath = "input.txt";
-                        Solution solution = new Solution();
-                        int testCaseNumber;
-                        List<JsonResult> response = new ArrayList<>();
-                        %s ans;
-                        try(BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-                            int testcases = Integer.parseInt(reader.readLine());
-                            for(int i = 0; i < testcases; i++) {
-                                int testcaseNumber = Integer.parseInt(reader.readLine());
-                %s
-                                ans = solution.%s(%s);
-                                %s expectedOutput = %s;
-                                List<RuntimeData> inputList = Arrays.asList(%s);
-                                response.add(EvaluationService.evaluate(ans, expectedOutput, "%s", %d, testcaseNumber, inputList));
-                            }
-                        }
-                        catch(IOException e) {
-                            System.out.println(e.getMessage());
-                        }
-                        System.out.println("{ \\"result\\" : " + response + "}");
-                    }
-                }
+                        import java.io.*;
+                         import java.util.*;
+                         public class Main {
+                             public static void main(String[] args) {
+                                 Scanner reader = new Scanner(System.in);
+                                 Solution solution = new Solution();
+                                 %s ans;
+                                     int testcases = Integer.parseInt(reader.nextLine().trim());
+                                     for(int i = 0; i < testcases; i++) {
+                         %s
+                                         ans = solution.%s(%s);
+                                         OutputUtility.print(ans);
+                                     }
+                             }
+                         }
                 """.formatted(returnType,
                         parameterDeclaration.toString(),
                         structure.getMethodName(),
-                        methodArgs,
-                        returnType,
-                        expectedOutputCode,
-                        parameterObjectsList,
-                        structure.getReturnType().getBaseType().name(),
-                        structure.getReturnType().getDimensions());
-
+                        methodArgs);
         return driverTemplate + "\n" +
-                utilityCode.generateInputUtilityCode() +
-                "\n" +
-                utilityCode.generateRuntimeDataUtilityCode() +
-                "\n" +
-                utilityCode.generateJsonResponseUtilityCode() +
-                "\n" +
-                utilityCode.generateEvaluationServiceUtilityCode();
+                utilityCode.generateInputUtilityCode() + "\n" +
+                utilityCode.generateOutputUtilityCode();
+
     }
 }

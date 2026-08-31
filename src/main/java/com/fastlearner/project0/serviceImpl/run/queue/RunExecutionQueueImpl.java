@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class RunExecutionQueueImpl implements RunExecutionQueue {
     private final BlockingQueue<RunJob> queue =  new LinkedBlockingQueue<>(1000);
@@ -22,6 +24,11 @@ public class RunExecutionQueueImpl implements RunExecutionQueue {
     @Override
     public boolean isEmpty() {
         return queue.isEmpty();
+    }
+
+    @Override
+    public RunJob poll()  {
+        return queue.poll();
     }
 
 }

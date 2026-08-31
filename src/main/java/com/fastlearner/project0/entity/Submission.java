@@ -36,7 +36,6 @@ public class Submission
     private Integer passedTestCases;
     private Integer totalTestCases;
     private LocalDateTime submittedAt;
-    private String token;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     @Lob

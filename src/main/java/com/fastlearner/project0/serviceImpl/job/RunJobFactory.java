@@ -21,16 +21,15 @@ public class RunJobFactory
     private final JudgeService judgeService;
     @Value("${judge.api.run.callbackUrl}")
     private String callbackUrl;
-
     public RunJob createJob(RunRequestDTO runRequest)
     {
-        StringBuilder driverCode = codeGeneratorService.generateDriverCode(runRequest.getProblemId(), runRequest.getLanguage());
-        String finalCode = driverCode.append("\n").append(runRequest.getSourceCode()).toString();
-        String stdin = testcaseFactory.buildTestcases(runRequest.getProblemId(), TestCaseType.SAMPLE).getStdin();
+        String driverCode = codeGeneratorService.generateDriverCode(runRequest.getProblemId(), runRequest.getLanguage());
+        String finalCode = driverCode+"\n"+runRequest.getSourceCode();
+        String stdin = testcaseFactory.buildTestcases(runRequest.getProblemId(), TestCaseType.SAMPLE);
         JudgeRequest judgeRequest = new JudgeRequest(finalCode,
                                         judgeService.getJudgeLanguageId(runRequest.getLanguage()),
                                         stdin,
-                                        callbackUrl);
+                                            callbackUrl);
         return new RunJob(runRequest.getProblemId(), judgeRequest,new CompletableFuture<>());
     }
 

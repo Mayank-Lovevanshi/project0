@@ -1,10 +1,12 @@
 package com.fastlearner.project0.service.submission.queue;
-
 import com.fastlearner.project0.dto.job.SubmissionJob;
+
+import java.util.concurrent.TimeUnit;
 
 public interface SubmissionExecutionQueue
 {
-    public void enqueue(SubmissionJob job);
-    public SubmissionJob take() throws InterruptedException;
-    public boolean isEmpty();
+     void enqueue(SubmissionJob job);
+     SubmissionJob take() throws InterruptedException;
+     boolean isEmpty();
+     SubmissionJob poll();
 }

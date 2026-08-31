@@ -2,9 +2,10 @@ package com.fastlearner.project0.serviceImpl.codeGenerator;
 
 import com.fastlearner.project0.entity.Structure;
 import com.fastlearner.project0.enums.Language;
+import com.fastlearner.project0.exceptions.ResourceNotFoundException;
+import com.fastlearner.project0.repository.StructureRepository;
 import com.fastlearner.project0.service.codeGenerator.CodeGeneratorService;
 import com.fastlearner.project0.service.codeGenerator.LanguageCodeGenerator;
-import com.fastlearner.project0.service.structure.StructureService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,20 +14,24 @@ import java.util.stream.Collectors;
 
 @Service
 public class CodeGeneratorServiceImpl implements CodeGeneratorService {
-    private final StructureService structureService;
+    private final StructureRepository structureRepository;
     private final Map<Language, LanguageCodeGenerator> generatorMap;
-    public CodeGeneratorServiceImpl(StructureService structureService, List<LanguageCodeGenerator> generatorList) {
-        this.structureService = structureService;
+    public CodeGeneratorServiceImpl(StructureRepository structureRepository, List<LanguageCodeGenerator> generatorList) {
+        this.structureRepository = structureRepository;
         this.generatorMap = generatorList.stream().collect(Collectors.toMap(LanguageCodeGenerator::getLanguage, generator -> generator));
+    }
+    private Structure getStructure(Long problemId)
+    {
+        return structureRepository.findByProblemId(problemId).orElseThrow(()->new ResourceNotFoundException("Structure not found"));
     }
     @Override
     public String generateDriverCode(Long problemId, Language language) {
-        Structure structure = structureService.getStructure(problemId);
+        Structure structure = getStructure(problemId);
         return getGenerator(language).generateDriverCode(structure);
     }
     @Override
     public String generateStarterCode(Long problemId, Language language) {
-        Structure structure = structureService.getStructure(problemId);
+        Structure structure = getStructure(problemId);
         return getGenerator(language).generateStarterCode(structure);
     }
     private LanguageCodeGenerator getGenerator(Language language) {

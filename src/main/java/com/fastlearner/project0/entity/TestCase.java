@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -15,8 +16,8 @@ public class TestCase
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Lob
     @Column(nullable = false)
+    @Lob
     private String inputData;
     @Lob
     @Column(nullable = false)
