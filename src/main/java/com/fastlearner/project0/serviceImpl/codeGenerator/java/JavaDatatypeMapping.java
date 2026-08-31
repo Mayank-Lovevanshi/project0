@@ -9,18 +9,22 @@ import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
 import java.util.Map;
+
 @Component
 public class JavaDatatypeMapping implements DatatypeMapping
 {
     private static final Map<BaseType,String[]> INPUT_CODE_LOOKUP = new EnumMap<>(BaseType.class);
+
     static {
-        INPUT_CODE_LOOKUP.put(BaseType.INTEGER,   new String[]{"Integer.parseInt(reader.readLine().trim())", "InputParser.readIntArray(reader)",     "InputParser.readIntMatrix(reader)"});
-        INPUT_CODE_LOOKUP.put(BaseType.LONG,      new String[]{"Long.parseLong(reader.readLine().trim())",    "InputParser.readLongArray(reader)",    "InputParser.readLongMatrix(reader)"});
-        INPUT_CODE_LOOKUP.put(BaseType.BOOLEAN,   new String[]{"Boolean.parseBoolean(reader.readLine().trim())","InputParser.readBooleanArray(reader)", "InputParser.readBooleanMatrix(reader)"});
-        INPUT_CODE_LOOKUP.put(BaseType.DOUBLE,    new String[]{"Double.parseDouble(reader.readLine().trim())", "InputParser.readDoubleArray(reader)",  "InputParser.readDoubleMatrix(reader)"});
-        INPUT_CODE_LOOKUP.put(BaseType.STRING,    new String[]{"reader.readLine()",                          "InputParser.readStringArray(reader)",  "InputParser.readStringMatrix(reader)"});
-        INPUT_CODE_LOOKUP.put(BaseType.CHARACTER, new String[]{"reader.readLine().charAt(0)",                 "InputParser.readCharArray(reader)",    "InputParser.readCharMatrix(reader)"});
+        // Updated to use reader.nextLine() instead of reader.readLine() to match Scanner
+        INPUT_CODE_LOOKUP.put(BaseType.INTEGER,   new String[]{"Integer.parseInt(reader.nextLine().trim())",   "InputParser.readIntArray(reader)",     "InputParser.readIntMatrix(reader)"});
+        INPUT_CODE_LOOKUP.put(BaseType.LONG,      new String[]{"Long.parseLong(reader.nextLine().trim())",      "InputParser.readLongArray(reader)",    "InputParser.readLongMatrix(reader)"});
+        INPUT_CODE_LOOKUP.put(BaseType.BOOLEAN,   new String[]{"Boolean.parseBoolean(reader.nextLine().trim())","InputParser.readBooleanArray(reader)", "InputParser.readBooleanMatrix(reader)"});
+        INPUT_CODE_LOOKUP.put(BaseType.DOUBLE,    new String[]{"Double.parseDouble(reader.nextLine().trim())",  "InputParser.readDoubleArray(reader)",  "InputParser.readDoubleMatrix(reader)"});
+        INPUT_CODE_LOOKUP.put(BaseType.STRING,    new String[]{"reader.nextLine().trim()",                     "InputParser.readStringArray(reader)",  "InputParser.readStringMatrix(reader)"});
+        INPUT_CODE_LOOKUP.put(BaseType.CHARACTER, new String[]{"reader.nextLine().trim().charAt(0)",           "InputParser.readCharArray(reader)",    "InputParser.readCharMatrix(reader)"});
     }
+
     @Override
     public Language getLanguage() {
         return Language.JAVA;

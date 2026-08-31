@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/problems/{problemId}/templates")
-//@RequestMapping("/api/templates")
 public class StructureController
 {
     private final StructureService problemTemplateService;

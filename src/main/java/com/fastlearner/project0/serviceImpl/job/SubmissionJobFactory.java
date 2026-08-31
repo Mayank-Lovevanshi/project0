@@ -19,16 +19,16 @@ public class SubmissionJobFactory
     private final CodeGeneratorService codeGeneratorService;
     private final TestcaseFactory testcaseFactory;
     private final JudgeService judgeService;
-    @Value("${judge.api.run.callbackUrl}")
+    @Value("${judge0.api.callbackUrl}")
     private String callbackUrl;
     public SubmissionJob createJob(CreateSubmissionRequest request,Long submissionId)
     {
-        StringBuilder driverCode = codeGeneratorService.generateDriverCode(
+        String driverCode = codeGeneratorService.generateDriverCode(
                 request.getProblemId(),
                 request.getLanguage()
         );
-        String finalCode = driverCode.append("\n").append(request.getSourceCode()).toString();
-        String stdin = testcaseFactory.buildTestcases(request.getProblemId(), TestCaseType.HIDDEN).getStdin();
+        String finalCode = driverCode+"\n"+request.getSourceCode();
+        String stdin = testcaseFactory.buildTestcases(request.getProblemId(), TestCaseType.HIDDEN);
         JudgeRequest judgeRequest = new JudgeRequest(finalCode,
                 judgeService.getJudgeLanguageId(request.getLanguage()),
                 stdin,

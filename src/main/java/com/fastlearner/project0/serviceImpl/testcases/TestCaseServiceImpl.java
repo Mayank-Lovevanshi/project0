@@ -9,29 +9,26 @@ import com.fastlearner.project0.entity.TestCase;
 import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.exceptions.InvalidArgumentException;
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
-import com.fastlearner.project0.repository.ProblemRepository;
 import com.fastlearner.project0.repository.TestCaseRepository;
+import com.fastlearner.project0.service.problem.ProblemService;
 import com.fastlearner.project0.service.testcases.TestCaseService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 @Service
+@RequiredArgsConstructor
 public class TestCaseServiceImpl implements TestCaseService
 {
     private final TestCaseRepository testCaseRepository;
-    private final ProblemRepository problemRepository;
+    private final ProblemService problemService;
     private final ModelMapper modelMapper;
-    public TestCaseServiceImpl(TestCaseRepository testCaseRepository, ProblemRepository problemRepository, ModelMapper modelMapper) {
-        this.testCaseRepository = testCaseRepository;
-        this.problemRepository = problemRepository;
-        this.modelMapper = modelMapper;
-    }
     @Override
     public TestCaseResponse createTestCase(Long problemId, CreateTestCaseRequest testCaseDTO) {
         if(problemId<=0) throw new InvalidArgumentException("INVALID_PROBLEM_ID");
-        Problem problemDB = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        Problem problemDB = problemService.findById(problemId);
         TestCase testCase = modelMapper.map(testCaseDTO, TestCase.class);
         testCase.setProblem(problemDB);
         testCaseRepository.save(testCase);
@@ -71,7 +68,7 @@ public class TestCaseServiceImpl implements TestCaseService
 
     @Override
     public TestCaseBatchResponse createTestCaseBatch(Long problemId, CreateTestCaseBatchRequest testCaseBatchDTO) {
-        Problem problem = problemRepository.findById(problemId).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
+        Problem problem = problemService.findById(problemId);
         List<CreateTestCaseRequest> list= testCaseBatchDTO.getTestCases();
         TestCase testCaseDB;
         TestCase savedTestCaseDB;
@@ -85,5 +82,10 @@ public class TestCaseServiceImpl implements TestCaseService
         }
         testCaseBatchResponse.setTestCases(testCaseResponses);
         return testCaseBatchResponse;
+    }
+
+    @Override
+    public List<TestCase> getTestCases(Long problemId, TestCaseType testCaseType) {
+        return testCaseRepository.findByProblemIdAndTestCaseType(problemId,testCaseType);
     }
 }

@@ -76,9 +76,9 @@ public class StructureServiceImpl implements StructureService
 
     @Override
     public StudentStructureResponse getStarterCode(Long problemId,Language language) {
-        StringBuilder starterCode = codeGeneratorService.generateStarterCode(problemId,language);
+        String starterCode = codeGeneratorService.generateStarterCode(problemId,language);
         StudentStructureResponse studentStructureResponse = new StudentStructureResponse();
-        studentStructureResponse.setStarterCode(starterCode.toString());
+        studentStructureResponse.setStarterCode(starterCode);
         return studentStructureResponse;
     }
 }

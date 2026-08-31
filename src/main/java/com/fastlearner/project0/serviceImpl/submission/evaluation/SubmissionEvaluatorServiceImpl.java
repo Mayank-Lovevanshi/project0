@@ -1,15 +1,22 @@
 package com.fastlearner.project0.serviceImpl.submission.evaluation;
+import com.fastlearner.project0.dto.job.SubmissionJob;
 import com.fastlearner.project0.dto.judge0.Judge0SubmissionResponse;
+
 import com.fastlearner.project0.dto.submission.SubmissionResponse;
-import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
+import com.fastlearner.project0.dto.testcases.TestcaseFactoryResponse;
 import com.fastlearner.project0.entity.Problem;
 import com.fastlearner.project0.entity.Submission;
+
 import com.fastlearner.project0.enums.SubmissionStatus;
 import com.fastlearner.project0.enums.TestCaseType;
 import com.fastlearner.project0.enums.Verdict;
+
 import com.fastlearner.project0.exceptions.ResourceNotFoundException;
 import com.fastlearner.project0.repository.SubmissionRepository;
+import com.fastlearner.project0.service.judge.EvaluateJudgeResponse;
+import com.fastlearner.project0.service.submission.SubmissionService;
 import com.fastlearner.project0.service.submission.evaluation.SubmissionEvaluatorService;
+import com.fastlearner.project0.service.submission.registery.PendingSubmissionExecutionRegistry;
 import com.fastlearner.project0.serviceImpl.util.TestcaseFactory;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,12 +25,15 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+
 @RequiredArgsConstructor
 @Service
 public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorService
 {
     private final TestcaseFactory testcaseFactory;
-    private final SubmissionRepository submissionRepository;
+    private final SubmissionService submissionService;
+    private final PendingSubmissionExecutionRegistry pendingSubmissionExecutionRegistry;
+    private final EvaluateJudgeResponse evaluateJudgeResponse;
     private final ModelMapper modelMapper;
 
     private Verdict mapVerdict(Judge0SubmissionResponse response)
@@ -39,13 +49,12 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
             default -> Verdict.SYSTEM_ERROR;
         };
     }
-    private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput, int size, Submission submission)
+    private void modifySubmission(Judge0SubmissionResponse result, String expectedOutput,int size, Submission submission)
     {
-        /*
         int passedTestCases=0;
         String actualOutput = result.getStdout();
         Verdict judgeVerdict = mapVerdict(result);
-        passedTestCases = getPassedTestCases(expectedOutput,actualOutput);
+        passedTestCases = evaluateJudgeResponse.getPassedTestCases(expectedOutput,actualOutput);
         submission.setVerdict(judgeVerdict);
         if(judgeVerdict.equals(Verdict.ACCEPTED))
         {
@@ -74,27 +83,23 @@ public class SubmissionEvaluatorServiceImpl implements SubmissionEvaluatorServic
         submission.setTotalTestCases(size);
         submission.setStatus(SubmissionStatus.COMPLETED);
         submission.setCompletedAt(LocalDateTime.now());
-
-         */
     }
 
     @Override
     public void evaluateResponse(Judge0SubmissionResponse response) {
-        /*
         String token = response.getToken();
-        Job<SubmissionResponse> job = (Job<SubmissionResponse>) pendingExecutionRegistry.get(token);
-        Submission submission = submissionRepository.findByToken(response.getToken()).orElseThrow(() -> new ResourceNotFoundException("SUBMISSION_NOT_FOUND"));
+        SubmissionJob job = pendingSubmissionExecutionRegistry.get(token);
+        Submission submission = submissionService.findSubmissionById(job.getSubmissionId());
         Problem problem = submission.getProblem();
-        TestcaseFactoryResponse testcasesResponse= testcaseFactory.buildTestcases(problem.getId(), TestCaseType.HIDDEN);
-        modifySubmission(response,testcasesResponse.getStdin(),testcasesResponse.getNumberOfTestCases(),submission);
-        long totalTimeMs = Duration.between(submission.getSubmittedAt(), submission.getCompletedAt()).toMillis();
-        long judgeProcessingTime = Duration.between(submission.getStartedAt(), submission.getCompletedAt()).toMillis();
-        System.out.println("Judge processing time: " + judgeProcessingTime);
-        System.out.println("Total time: " + totalTimeMs);
+        TestcaseFactoryResponse ans = testcaseFactory.getExpectedOutput(problem.getId(), TestCaseType.HIDDEN);
+        modifySubmission(response,ans.getExpectedOutput(),ans.getSize(),submission);
+        long totalTimeMs = Duration.between(submission.getSubmittedAt(), submission.getCompletedAt()).toSeconds();
+//        long judgeProcessingTime = Duration.between(submission.getStartedAt(), submission.getCompletedAt()).toMillis();
+//        System.out.println("Judge processing time: " + judgeProcessingTime);
+        System.out.println("Total time: " + totalTimeMs+"s");
+        pendingSubmissionExecutionRegistry.remove(token);
         job.getFuture().complete(modelMapper.map(submission, SubmissionResponse.class));
-        submissionRepository.save(submission);
-
-         */
+        submissionService.saveSubmission(submission);
     }
 
 }

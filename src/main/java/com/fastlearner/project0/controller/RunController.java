@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -20,6 +21,7 @@ public class RunController
     @ResponseStatus(HttpStatus.OK)
     public CompletableFuture<RunResponseDTO> run(@RequestBody @Valid RunRequestDTO runRequest)
     {
+        System.out.println("Run request received");
         return runService.run(runRequest);
     }
 

@@ -1,9 +1,9 @@
 package com.fastlearner.project0.serviceImpl.util;
 
-import com.fastlearner.project0.dto.testcases.factory.TestcaseFactoryResponse;
+import com.fastlearner.project0.dto.testcases.TestcaseFactoryResponse;
 import com.fastlearner.project0.entity.TestCase;
 import com.fastlearner.project0.enums.TestCaseType;
-import com.fastlearner.project0.repository.TestCaseRepository;
+import com.fastlearner.project0.service.testcases.TestCaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.List;
@@ -11,15 +11,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestcaseFactory
 {
-    private final TestCaseRepository testCaseRepository;
-    public TestcaseFactoryResponse buildTestcases(Long problemId, TestCaseType testcaseType) {
-        List<TestCase> testcases = testCaseRepository.findByProblemIdAndTestCaseType(problemId,testcaseType);
+    private final TestCaseService testCaseService;
+    public String buildTestcases(Long problemId, TestCaseType testcaseType) {
+        List<TestCase> testcases = testCaseService.getTestCases(problemId,testcaseType);
         StringBuilder input = new StringBuilder();
+        input.append(testcases.size()).append("\n");
         for(TestCase testcase : testcases){
-            if(testcase.getTestCaseType().equals(testcaseType)){
-                input.append(testcase.getExpectedOutput()).append("\n");
-            }
+            input.append(testcase.getInputData()).append("\n");
+            input.append(testcase.getExpectedOutput()).append("\n");
         }
-        return new TestcaseFactoryResponse(input.toString(),testcases.size());
+        return input.toString();
+    }
+    public TestcaseFactoryResponse getExpectedOutput(Long problemId, TestCaseType testcaseType) {
+        List<TestCase> testcases = testCaseService.getTestCases(problemId,testcaseType);
+        StringBuilder expectedOutput = new StringBuilder();
+        for(TestCase testcase : testcases){
+            expectedOutput.append(testcase.getExpectedOutput()).append("\n");
+        }
+        TestcaseFactoryResponse response = new TestcaseFactoryResponse(testcases.size(),expectedOutput.toString());
+        return response;
     }
 }

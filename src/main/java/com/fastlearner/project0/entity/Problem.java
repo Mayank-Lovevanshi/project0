@@ -28,18 +28,10 @@ public class Problem
     @Column(nullable = false)
     private String statement;
     @Column(nullable = false)
-    private String inputFormat;
-    @Column(nullable = false)
-    private String outputFormat;
-    @Column(nullable = false)
     private String constraints;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Difficulty difficulty;
-    @Column(nullable = false)
-    private Integer timeLimitMs;
-    @Column(nullable = false)
-    private Integer memoryLimitKb;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProblemStatus status;

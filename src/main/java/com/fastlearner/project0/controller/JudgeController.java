@@ -6,7 +6,7 @@ import com.fastlearner.project0.service.util.DecoderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
+///api/judge/submission
 @RestController
 @RequestMapping("/api/judge")
 @ResponseStatus(HttpStatus.OK)
@@ -19,12 +19,14 @@ public class JudgeController
     @PutMapping("/submission")
     public void saveSubmission(@RequestBody Judge0SubmissionResponse body)
     {
+        System.out.println("save submission from Judge");
         decoderService.decode(body);
         submissionEvaluatorService.evaluateResponse(body);
     }
     @PutMapping("/run")
     public void runResult(@RequestBody Judge0SubmissionResponse body)
     {
+        System.out.println("Arrived");
         decoderService.decode(body);
         runEvaluatorService.evaluate(body);
     }

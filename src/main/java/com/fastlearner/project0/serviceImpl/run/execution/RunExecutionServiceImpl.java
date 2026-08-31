@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
@@ -20,16 +21,37 @@ public class RunExecutionServiceImpl implements RunExecutionService
     private final JudgeService judgeService;
     private final PendingRunExecutionRegistry pendingExecutionRegistry;
     public void execute() throws InterruptedException {
+        // 1. Take the first job. This blocks until at least one request is available.
+        RunJob firstJob = executionQueue.take();
+
         List<RunJob> jobs = new ArrayList<>();
-        while(!executionQueue.isEmpty())
-        {
-            jobs.add(executionQueue.take());
+        jobs.add(firstJob);
+
+        long deadline = System.currentTimeMillis() + 250; // Wait up to 250ms total for more requests
+
+        // 2. Keep collecting jobs until we hit a batch size of 10 or run out of time
+        while (jobs.size() < 10) {
+            long remainingTime = deadline - System.currentTimeMillis();
+            if (remainingTime <= 0) {
+                break; // Time window has expired
+            }
+
+            // Poll the queue for the remaining duration of our 250ms window
+            RunJob nextJob = executionQueue.poll();
+            if (nextJob != null) {
+                jobs.add(nextJob);
+            } else {
+                // poll returned null, meaning no new requests arrived within the timeout
+                break;
+            }
         }
-        List<JudgeRequest> judgeRequests = jobs.stream().map(job -> job.getJudgeRequest()).toList();
+
+        // 3. Process the collected batch (could be anywhere from 1 to 10 jobs)
+        List<JudgeRequest> judgeRequests = jobs.stream().map(RunJob::getJudgeRequest).toList();
         Judge0TokenResponse[] tokens = judgeService.execute(judgeRequests);
-        for(int i=0;i<tokens.length;i++)
-        {
-            pendingExecutionRegistry.put(tokens[i].getToken(),jobs.get(i));
+
+        for (int i = 0; i < tokens.length; i++) {
+            pendingExecutionRegistry.put(tokens[i].getToken(), jobs.get(i));
         }
     }
 }

@@ -20,16 +20,6 @@ public class SubmissionExecutionServiceImpl implements SubmissionExecutionServic
     private final JudgeService judgeService;
     private final PendingSubmissionExecutionRegistry pendingExecutionRegistry;
     public void execute() throws InterruptedException {
-        List<SubmissionJob> jobs = new ArrayList<>();
-        while(!executionQueue.isEmpty())
-        {
-            jobs.add(executionQueue.take());
-        }
-        List<JudgeRequest> judgeRequests = jobs.stream().map(job -> job.getJudgeRequest()).toList();
-        Judge0TokenResponse[] tokens = judgeService.execute(judgeRequests);
-        for(int i=0;i<tokens.length;i++)
-        {
-            pendingExecutionRegistry.put(tokens[i].getToken(),jobs.get(i));
-        }
+
     }
 }
