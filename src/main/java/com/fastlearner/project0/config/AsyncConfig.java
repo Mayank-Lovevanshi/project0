@@ -15,20 +15,23 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class AsyncConfig {
-    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private final SubmissionExecutionWorker submissionExecutionWorker;
+    private final RunExecutionWorker runExecutionWorker;
     @PostConstruct
     public void start()
     {
         executorService.submit(submissionExecutionWorker);
+        executorService.submit(runExecutionWorker);
     }
     @PreDestroy
     public void stop()
     {
         submissionExecutionWorker.stop();
+        runExecutionWorker.stop();
         executorService.shutdown();
         try {
-            executorService.awaitTermination(30, TimeUnit.SECONDS);
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

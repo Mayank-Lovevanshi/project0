@@ -72,13 +72,12 @@ public class ProblemServiceImpl implements ProblemService {
     public ProblemResponse updateProblem(Long id, UpdateProblemRequest problemDTO) {
         if(id<=0) throw new InvalidArgumentException("INVALID_ID");
         Problem problemFromDB = problemRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("PROBLEM_NOT_FOUND"));
-        Problem problem = modelMapper.map(problemFromDB,Problem.class);
         problemFromDB.setStatus(problemDTO.getStatus());
         problemFromDB.setTitle(problemDTO.getTitle());
         problemFromDB.setStatement(problemDTO.getStatement());
         problemFromDB.setConstraints(problemDTO.getConstraints());
         problemFromDB.setDifficulty(problemDTO.getDifficulty());
-        Problem savedProblem = problemRepository.save(problem);
+        Problem savedProblem = problemRepository.save(problemFromDB);
         return modelMapper.map(savedProblem,ProblemResponse.class);
     }
     public Problem findById(Long id)
