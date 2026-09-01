@@ -74,6 +74,7 @@ public class JavaCodeGenerator implements LanguageCodeGenerator {
                          %s
                                          ans = solution.%s(%s);
                                          OutputUtility.print(ans);
+                                         System.out.println("---FASTELEARNER_DELIMITER_42---");
                                      }
                              }
                          }

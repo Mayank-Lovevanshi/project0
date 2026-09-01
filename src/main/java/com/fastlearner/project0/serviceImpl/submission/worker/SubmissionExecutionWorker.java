@@ -32,11 +32,20 @@ public class SubmissionExecutionWorker implements ExecutionWorker {
         isRunning = true;
         while (isRunning || !submissionExecutionQueue.isEmpty()) {
             List<SubmissionJob> jobs = new ArrayList<>();
-            while(jobs.size()<20)
-            {
-                SubmissionJob job = submissionExecutionQueue.poll();
-                if(job==null) break;
-                jobs.add(job);
+            try {
+                // Block until at least one job is available
+                SubmissionJob firstJob = submissionExecutionQueue.take();
+                jobs.add(firstJob);
+                
+                // Drain up to 19 more jobs if available immediately
+                while (!submissionExecutionQueue.isEmpty() && jobs.size() < 20) {
+                    SubmissionJob job = submissionExecutionQueue.poll();
+                    if (job == null) break;
+                    jobs.add(job);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                continue;
             }
             if(jobs.isEmpty()) continue;
             List<JudgeRequest> requests = jobs.stream().map(SubmissionJob::getJudgeRequest).toList();

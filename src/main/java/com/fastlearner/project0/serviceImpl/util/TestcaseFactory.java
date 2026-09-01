@@ -18,7 +18,6 @@ public class TestcaseFactory
         input.append(testcases.size()).append("\n");
         for(TestCase testcase : testcases){
             input.append(testcase.getInputData()).append("\n");
-            input.append(testcase.getExpectedOutput()).append("\n");
         }
         return input.toString();
     }
